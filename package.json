@@ -6,7 +6,8 @@
   "bin": "./bin/cli.js",
   "files": [
     "bin/*",
-    "lib/*"
+    "lib/*",
+    "plugin/*"
   ],
   "repository": {
     "type": "git",
