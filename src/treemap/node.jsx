@@ -2,7 +2,7 @@ import { h } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
 
 const PARENT_PADDING = 4;
-const PARENT_TITLE_HEIGHT = 15;
+const PARENT_TITLE_HEIGHT = 20;
 
 const leafScale = (box, { width, height }) => {
   const scale = Math.min(
@@ -12,10 +12,10 @@ const leafScale = (box, { width, height }) => {
   return scale;
 };
 
-const parentScale = (box, { width }) => {
+const parentScale = (box, { width, height }) => {
   const scale = Math.min(
     (width - PARENT_PADDING * 2) / box.width,
-    (PARENT_TITLE_HEIGHT - 2) / box.height
+    (Math.min(height, PARENT_TITLE_HEIGHT) - 5) / box.height
   );
   return scale;
 };
@@ -72,7 +72,10 @@ const Node = ({
       textRef.current.setAttribute("y", height / 2 / scale);
       textRef.current.setAttribute("x", width / 2 / scale);
     } else {
-      textRef.current.setAttribute("y", 10 / scale);
+      textRef.current.setAttribute(
+        "y",
+        Math.min(PARENT_TITLE_HEIGHT, height) / 2 / scale
+      );
     }
   }, [width, height]);
 
