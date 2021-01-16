@@ -9,15 +9,10 @@ import {
 import SideBar from "../sidebar.js";
 import Chart from "./chart.js";
 
-import uid from "../uid";
 import createRainbowColor from "./color";
 import { getAvailableSizeOptions } from "../sizes";
 
-const Main = ({
-  width,
-  height,
-  data: { tree, links, options = {} },
-}) => {
+const Main = ({ width, height, data: { tree, links, options = {} } }) => {
   const availableSizeProperties = getAvailableSizeOptions(options);
 
   const [sizeProperty, setSizeProperty] = useState(availableSizeProperties[0]);
@@ -58,9 +53,6 @@ const Main = ({
           value[prop] = node.data[prop] || 0;
         }
       }
-
-      node.clipUid = uid("clip");
-      node.nodeUid = uid("node");
 
       node.originalValue = value;
       node.value = value[sizeProperty];

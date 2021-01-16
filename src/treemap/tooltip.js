@@ -24,13 +24,21 @@ const Tooltip = ({
     const percentage = percentageNum.toFixed(2);
     const percentageString = percentage + "%";
 
-    const { id } = node.data;
+    const { id, name, isRoot } = node.data;
 
-    const path = node
-      .ancestors()
-      .reverse()
-      .map((d) => d.data.name)
-      .join("/");
+    const path = isRoot
+      ? name
+      : node
+          .ancestors()
+          .reverse()
+          .map((d) => {
+            if (d.data.isRoot) {
+              return "";
+            }
+            return d.data.name;
+          })
+          .filter(Boolean)
+          .join("/");
 
     return html`
       <div>${path}</div>
