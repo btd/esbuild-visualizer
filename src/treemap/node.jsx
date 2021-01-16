@@ -45,18 +45,20 @@ const Node = ({
 
   const textAttributes = {};
   if (isLeaf) {
-    //textAttributes.x = width / 2;
     textAttributes["text-anchor"] = "middle";
     textAttributes["dominant-baseline"] = "middle";
-    //textAttributes.y = height / 2;
   } else {
     textAttributes.x = PARENT_PADDING;
-    textAttributes.y = 15;
+    textAttributes["dominant-baseline"] = "middle";
   }
 
   const sizeRef = useRef();
 
   useLayoutEffect(() => {
+    if (width == 0 || height == 0) {
+      return;
+    }
+
     if (sizeRef.current == null) {
       sizeRef.current = textRef.current.getBoundingClientRect();
     }
@@ -69,8 +71,14 @@ const Node = ({
     if (isLeaf) {
       textRef.current.setAttribute("y", height / 2 / scale);
       textRef.current.setAttribute("x", width / 2 / scale);
+    } else {
+      textRef.current.setAttribute("y", 10 / scale);
     }
   }, [width, height]);
+
+  if (width == 0 || height == 0) {
+    return null;
+  }
 
   return (
     <g
