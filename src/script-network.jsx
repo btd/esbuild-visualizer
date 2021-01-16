@@ -114,7 +114,7 @@ const Tooltip = ({
 
   return (
     <div
-      class={`tooltip ${visible ? "" : "tooltip-hidden"}`}
+      className={`tooltip ${visible ? "" : "tooltip-hidden"}`}
       ref={ref}
       style={style}
     >
@@ -137,11 +137,11 @@ const Network = ({
 }) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${width} ${height}`}>
-      <g stroke="#999" stroke-opacity="0.6">
+      <g stroke="#999" strokeOpacity="0.6">
         {links.map((link) => {
           return (
             <line
-              stroke-width="1"
+              strokeWidth="1"
               x1={link.source.x}
               y1={link.source.y}
               x2={link.target.x}
@@ -150,7 +150,7 @@ const Network = ({
           );
         })}
       </g>
-      <g stroke="#fff" stroke-width="1.5">
+      <g stroke="#fff" strokeWidth="1.5">
         {nodes.map((node) => {
           return (
             <circle
@@ -234,20 +234,20 @@ const SideBar = ({
     }
   };
   return (
-    <aside class="sidebar">
-      <div class="size-selectors">
+    <aside className="sidebar">
+      <div className="size-selectors">
         {availableSizeProperties.length > 1 &&
           availableSizeProperties.map((sizeProp) => {
             const id = `selector-${sizeProp}`;
             return (
-              <div class="size-selector">
+              <div className="size-selector">
                 <input
                   type="radio"
                   id={id}
                   checked={sizeProp === sizeProperty}
                   onChange={handleChange(sizeProp)}
                 />
-                <label for={id}> {LABELS[sizeProp]} </label>
+                <label htmlFor={id}> {LABELS[sizeProp]} </label>
               </div>
             );
           })}

@@ -1,31 +1,23 @@
-import { useState } from "preact/hooks";
 import { h, Fragment } from "preact";
+import { useState } from "preact/hooks";
 
 import {
+  partition as d3partition,
   hierarchy as d3hierarchy,
-  treemap as d3treemap,
-  treemapResquarify,
 } from "d3-hierarchy";
 
 import uid from "../uid.js";
-import createRainbowColor from "./color.js";
 import { getAvailableSizeOptions } from "../sizes.js";
 
 import SideBar from "../sidebar.jsx";
 import Chart from "./chart.jsx";
 
-const Main = ({ width, height, data: { tree, links, options = {} } }) => {
+const Main = ({ width, height, data: { tree, options = {} } }) => {
   const availableSizeProperties = getAvailableSizeOptions(options);
 
   const [sizeProperty, setSizeProperty] = useState(availableSizeProperties[0]);
 
-  const layout = d3treemap()
-    .size([width, height])
-    .paddingOuter(3)
-    .paddingTop(20)
-    .paddingInner(2)
-    .round(true)
-    .tile(treemapResquarify);
+  const layout = d3partition();
 
   const root = d3hierarchy(tree)
     .eachAfter((node) => {
@@ -65,23 +57,7 @@ const Main = ({ width, height, data: { tree, links, options = {} } }) => {
       (a, b) => b.originalValue[sizeProperty] - a.originalValue[sizeProperty]
     );
 
-  const color = createRainbowColor(root);
-
-  const importedByCache = new Map();
-  const importedCache = new Map();
-
-  for (const { source, target } of links || []) {
-    if (!importedByCache.has(target)) {
-      importedByCache.set(target, []);
-    }
-    if (!importedCache.has(source)) {
-      importedCache.set(source, []);
-    }
-
-    importedByCache.get(target).push({ id: source });
-    importedCache.get(source).push({ id: target });
-  }
-
+  const size = Math.min(width, height);
   return (
     <>
       <SideBar
@@ -92,13 +68,9 @@ const Main = ({ width, height, data: { tree, links, options = {} } }) => {
       <Chart
         layout={layout}
         root={root}
-        color={color}
-        width={width}
-        height={height}
+        size={size}
         sizeProperty={sizeProperty}
         availableSizeProperties={availableSizeProperties}
-        importedByCache={importedByCache}
-        importedCache={importedCache}
       />
     </>
   );
