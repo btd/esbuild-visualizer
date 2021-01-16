@@ -68,7 +68,7 @@ const Tooltip = ({
             </div>
             {[...new Set(importedByCache.get(id).map(({ id }) => id))].map(
               (id) => (
-                <div>{id}</div>
+                <div key={id}>{id}</div>
               )
             )}
           </div>
@@ -114,7 +114,7 @@ const Tooltip = ({
 
   return (
     <div
-      class={`tooltip ${visible ? "" : "tooltip-hidden"}`}
+      className={`tooltip ${visible ? "" : "tooltip-hidden"}`}
       ref={ref}
       style={style}
     >

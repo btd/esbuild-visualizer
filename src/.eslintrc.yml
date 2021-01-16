@@ -5,3 +5,15 @@ parserOptions:
 
 env:
   browser: true
+
+extends:
+  - "plugin:react/recommended"
+
+settings:
+  react:
+    pragma: h
+    fragment: Fragment
+    version: "16.0"
+
+rules:
+  react/prop-types: 0

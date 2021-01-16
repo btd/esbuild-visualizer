@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { h, Fragment } from "preact";
+import uid from "../uid";
 import {
   hierarchy as d3hierarchy,
   treemap as d3treemap,
@@ -53,6 +54,8 @@ const Main = ({ width, height, data: { tree, links, options = {} } }) => {
           value[prop] = node.data[prop] || 0;
         }
       }
+
+      node.nodeUid = uid("node");
 
       node.originalValue = value;
       node.value = value[sizeProperty];

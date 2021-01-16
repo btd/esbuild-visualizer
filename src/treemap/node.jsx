@@ -74,7 +74,7 @@ const Node = ({
 
   return (
     <g
-      class="node"
+      className="node"
       transform={`translate(${x0},${y0})`}
       onClick={onClick}
       onMouseOver={(evt) => {
@@ -89,13 +89,13 @@ const Node = ({
         width={width}
         height={height}
         stroke={isSelected ? "#fff" : null}
-        stroke-width={isSelected ? 2 : null}
+        strokeWidth={isSelected ? 2 : null}
       ></rect>
       <text
         ref={textRef}
         fill={fontColor}
         onClick={handleClickSelection}
-        font-size="0.7em"
+        fontSize="0.7em"
         {...textAttributes}
       >
         {data.name}

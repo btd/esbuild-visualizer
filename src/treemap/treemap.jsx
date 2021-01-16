@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { h, Fragment } from "preact";
+import { h } from "preact";
 import { group } from "d3-array";
 
 import Node from "./node.jsx";
@@ -66,11 +66,12 @@ const TreeMap = ({
     <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${width} ${height}`}>
       {nestedData.map(({ key, values }) => {
         return (
-          <g class="layer" key={key}>
+          <g className="layer" key={key}>
             {values.map((node) => {
               const { backgroundColor, fontColor } = color(node);
               return (
                 <Node
+                  key={node.nodeUid}
                   node={node}
                   backgroundColor={backgroundColor}
                   fontColor={fontColor}
