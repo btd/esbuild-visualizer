@@ -1,35 +1,30 @@
-# Rollup Plugin Visualizer
+# EsBuild Visualizer
 
-[![NPM Version](https://img.shields.io/npm/v/rollup-plugin-visualizer.svg)](https://npmjs.org/package/rollup-plugin-visualizer) [![Travis CI build status](https://img.shields.io/travis/com/btd/rollup-plugin-visualizer.svg)](https://travis-ci.com/btd/rollup-plugin-visualizer)
+[![NPM Version](https://img.shields.io/npm/v/esbuild-visualizer.svg)](https://npmjs.org/package/esbuild-visualizer) [![Travis CI build status](https://img.shields.io/travis/com/btd/esbuild-visualizer.svg)](https://travis-ci.com/btd/esbuild-visualizer)
 
 Visualize and analyze your Rollup bundle to see which modules are taking up space.
 
 ## Screenshots
 
-![pic](https://github.com/btd/rollup-plugin-visualizer/blob/master/pics/collage.png?raw=true)
+![pic](https://github.com/btd/esbuild-visualizer/blob/master/pics/collage.png?raw=true)
 
 ## Installation
 
 ```sh
-npm install --save-dev rollup-plugin-visualizer
+npm install --save-dev esbuild-visualizer
 ```
 
 or via yarn:
 
 ```sh
-yarn add --dev rollup-plugin-visualizer
+yarn add --dev esbuild-visualizer
 ```
 
 ## Usage
 
-```javascript
-import visualizer from 'rollup-plugin-visualizer';
+```sh
+./node_modules/.bin/esbuild-visualizer --metadata ./meta.json --exclude *.png
 
-//...
-plugins: [
-  visualizer()
-],
-//...
 ```
 
 ## Options
@@ -50,24 +45,6 @@ plugins: [
 
 `brotliSize` (boolean, default `false`) - Collect brolti size from source code and display it at chart. Only if current node version supports it
 
-## CLI
-
-This plugin provides cli util `rollup-plugin-visualizer`. Add `--help` to check actual options. It can be used like:
-
-```sh
-rollup-plugin-visualizer [OPTIONS] stat1.json stat2.json ../stat3.json
-```
-
-This can be usefull in case you have different config files in the same project and you want to display all of them in the same chart.
-
-## Build plugin
-
-For development if you need to build plugin, just exec:
-
-```js
-yarn run build
-```
-
 ## Disclaimer about generated files
 
 Generated html files do not and never will contain your source code (contents of files). They can contain only js/html/css code required to build chart (plugin code) and statistical information about your source code.
@@ -82,7 +59,3 @@ This statistical information can contain:
 ## Upgrades
 
 See CHANGELOG.md.
-
-## Acknowledgements
-
-Initially this plugin was based on `webpack-visualizer`, but in the end used only styles and layout. Thanks to the tons of people around internet for great examples of d3 usage. Also i would like to thank you Mike Bostock for awesome D3, and tons of examples.
