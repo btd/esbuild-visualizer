@@ -54,12 +54,16 @@ const Node = ({
     textAttributes.y = 15;
   }
 
+  const sizeRef = useRef();
+
   useLayoutEffect(() => {
-    const box = textRef.current.getBoundingClientRect();
+    if (sizeRef.current == null) {
+      sizeRef.current = textRef.current.getBoundingClientRect();
+    }
 
     const scale = isLeaf
-      ? leafScale(box, { width, height })
-      : parentScale(box, { width, height });
+      ? leafScale(sizeRef.current, { width, height })
+      : parentScale(sizeRef.current, { width, height });
 
     textRef.current.setAttribute("transform", `scale(${scale.toFixed(2)})`);
     if (isLeaf) {
