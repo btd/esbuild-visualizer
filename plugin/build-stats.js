@@ -40,7 +40,7 @@ ${script}
       const height = window.innerHeight;
 
       const chartNode = document.querySelector("main");
-      drawChart(chartNode, data, width, height);
+      drawChart.default(chartNode, data, width, height);
     };
 
     window.addEventListener('resize', run);

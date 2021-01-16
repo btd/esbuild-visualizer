@@ -8,7 +8,12 @@ const opn = require("open");
 const TEMPLATE = require("./template-types");
 const buildStats = require("./build-stats");
 
-const { buildTree, mergeTrees, addLinks } = require("./data");
+const {
+  buildTree,
+  mergeTrees,
+  addLinks,
+  mergeSingleChildWithParent,
+} = require("./data");
 
 module.exports = async (opts) => {
   opts = opts || {};
@@ -32,17 +37,17 @@ module.exports = async (opts) => {
     if (exclude.some((r) => r.test(id)) && !include.some((r) => r.test(id)))
       continue;
 
-    let tree;
-
     const modules = Object.entries(bundle.inputs);
 
-    tree = buildTree(modules);
+    const tree = buildTree(modules);
 
     Object.assign(tree, {
       renderedLength: bundle.bytes,
       isRoot: true,
       name: id,
     });
+
+    //mergeSingleChildWithParent(tree);
 
     roots.push(tree);
   }

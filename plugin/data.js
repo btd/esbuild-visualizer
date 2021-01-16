@@ -1,11 +1,10 @@
 "use strict";
 
-const path = require("path");
-
 const buildTree = (modules) => {
-  let tree = {
+  const tree = {
     name: "root",
     children: [],
+    isRoot: true,
   };
 
   for (const [id, { bytesInOutput }] of modules) {
@@ -49,6 +48,7 @@ const mergeTrees = (trees) => {
   const newTree = {
     name: "root",
     children: trees,
+    isRoot: true,
   };
 
   return newTree;
@@ -62,38 +62,30 @@ const addLinks = (inputEntries, links) => {
   }
 };
 
-const skipModule = (id) => !path.isAbsolute(id);
-
-const removeCommonPrefix = (nodes, nodeIds) => {
-  let commonPrefix = null;
-
-  for (const [id, uid] of Object.entries(nodeIds)) {
-    const node = nodes[uid];
-
-    if (!skipModule(id, node)) {
-      if (commonPrefix == null) {
-        commonPrefix = id;
-      }
-
-      for (let i = 0; i < commonPrefix.length && i < id.length; i++) {
-        if (commonPrefix[i] !== id[i]) {
-          commonPrefix = commonPrefix.slice(0, i);
-          break;
+const mergeSingleChildWithParent = (tree) => {
+  const stack = [tree];
+  while (stack.length !== 0) {
+    const parent = stack.pop();
+    if (parent.children != null) {
+      if (parent.children.length === 1) {
+        const child = parent.children[0];
+        Object.assign(parent, child, {
+          name: `${parent.name}/${child.name}`,
+          children: child.children,
+        });
+        stack.push(parent);
+      } else {
+        for (const child of parent.children || []) {
+          stack.push(child);
         }
       }
     }
   }
-
-  const commonPrefixLength = commonPrefix.length;
-  for (const [id, uid] of Object.entries(nodeIds)) {
-    const node = nodes[uid];
-    if (!skipModule(id, node)) {
-      const newId = id.slice(commonPrefixLength);
-      const value = nodeIds[id];
-      delete nodeIds[id];
-      nodeIds[newId] = value;
-    }
-  }
 };
 
-module.exports = { buildTree, mergeTrees, addLinks, removeCommonPrefix };
+module.exports = {
+  buildTree,
+  mergeTrees,
+  addLinks,
+  mergeSingleChildWithParent,
+};
