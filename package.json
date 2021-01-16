@@ -1,6 +1,6 @@
 {
   "name": "esbuld-visualizer",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": "Denis Bardadym <bardadymchik@gmail.com>",
   "license": "MIT",
   "bin": "./bin/cli.js",
