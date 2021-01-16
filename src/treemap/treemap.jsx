@@ -1,8 +1,8 @@
 import { useState } from "preact/hooks";
-import { html } from "htm/preact";
+import { h, Fragment } from "preact";
 import { group } from "d3-array";
 
-import Node from "./node.js";
+import Node from "./node.jsx";
 
 const TreeMap = ({
   root,
@@ -62,31 +62,32 @@ const TreeMap = ({
   }));
   nestedData.sort((a, b) => b.key - a.key);
 
-  return html`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox=${`0 0 ${width} ${height}`}>
-      ${nestedData.map(({ key, values }) => {
-        return html`
-          <g class="layer" key=${key}>
-            ${values.map((node) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${width} ${height}`}>
+      {nestedData.map(({ key, values }) => {
+        return (
+          <g class="layer" key={key}>
+            {values.map((node) => {
               const { backgroundColor, fontColor } = color(node);
-              return html`
-                <${Node}
-                  node=${node}
-                  backgroundColor=${backgroundColor}
-                  fontColor=${fontColor}
-                  onClick=${() =>
-                    setSelectedNode(selectedNode === node ? null : node)}
-                  isSelected=${selectedNode === node}
-                  onNodeHover=${onNodeHover}
-                  sizeProperty=${sizeProperty}
+              return (
+                <Node
+                  node={node}
+                  backgroundColor={backgroundColor}
+                  fontColor={fontColor}
+                  onClick={() =>
+                    setSelectedNode(selectedNode === node ? null : node)
+                  }
+                  isSelected={selectedNode === node}
+                  onNodeHover={onNodeHover}
+                  sizeProperty={sizeProperty}
                 />
-              `;
+              );
             })}
           </g>
-        `;
+        );
       })}
     </svg>
-  `;
+  );
 };
 
 export default TreeMap;

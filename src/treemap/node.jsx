@@ -1,4 +1,4 @@
-import { html } from "htm/preact";
+import { h } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
 
 const PARENT_PADDING = 4;
@@ -28,14 +28,7 @@ const Node = ({
   isSelected,
   onNodeHover,
 }) => {
-  const {
-    x0,
-    x1,
-    y1,
-    y0,
-    data,
-    children = null,
-  } = node;
+  const { x0, x1, y1, y0, data, children = null } = node;
 
   const isLeaf = children == null;
 
@@ -75,37 +68,36 @@ const Node = ({
     }
   }, [width, height]);
 
-  return html`
+  return (
     <g
       class="node"
-      transform="translate(${x0},${y0})"
-      onClick=${onClick}
-      onMouseOver=${(evt) => {
+      transform={`translate(${x0},${y0})`}
+      onClick={onClick}
+      onMouseOver={(evt) => {
         evt.stopPropagation();
         onNodeHover(node);
       }}
     >
       <rect
-        fill=${backgroundColor}
-        rx=${2}
-        ry=${2}
-        width=${width}
-        height=${height}
-        stroke=${isSelected ? "#fff" : null}
-        stroke-width=${isSelected ? 2 : null}
-      >
-      </rect>
+        fill={backgroundColor}
+        rx={2}
+        ry={2}
+        width={width}
+        height={height}
+        stroke={isSelected ? "#fff" : null}
+        stroke-width={isSelected ? 2 : null}
+      ></rect>
       <text
-        ref=${textRef}
-        fill=${fontColor}
-        onClick=${handleClickSelection}
+        ref={textRef}
+        fill={fontColor}
+        onClick={handleClickSelection}
         font-size="0.7em"
-        ...${textAttributes}
+        {...textAttributes}
       >
-        ${data.name}
+        {data.name}
       </text>
     </g>
-  `;
+  );
 };
 
 export default Node;

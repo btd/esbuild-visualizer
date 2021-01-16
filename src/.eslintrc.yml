@@ -1,5 +1,7 @@
 parserOptions:
   sourceType: module
+  parserOptions:
+    jsx: true
 
 env:
   browser: true

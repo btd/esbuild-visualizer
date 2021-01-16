@@ -62,8 +62,8 @@ if (argv.all) {
 
 const inputPath = (template) =>
   template === "treemap"
-    ? "./src/treemap/index.js"
-    : `./src/script-${template}.js`;
+    ? "./src/treemap/index.jsx"
+    : `./src/script-${template}.jsx`;
 
 const runBuild = async (template) => {
   const inputOptions = {
@@ -75,6 +75,8 @@ const runBuild = async (template) => {
     plugins: [scssPlugin],
     minify: true,
     target: ["es2017"],
+    jsxFragment: "Fragment",
+    jsxFactory: "h",
   };
 
   await esbuild.build(inputOptions);

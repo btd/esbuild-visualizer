@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useMemo } from "preact/hooks";
-import { html } from "htm/preact";
+import { h, Fragment } from "preact";
 
 import { format as formatBytes } from "bytes";
 
-import { LABELS } from "../sizes";
+import { LABELS } from "../sizes.js";
 
 const Tooltip = ({
   node,
@@ -40,36 +40,41 @@ const Tooltip = ({
           .filter(Boolean)
           .join("/");
 
-    return html`
-      <div>${path}</div>
-      ${availableSizeProperties.map((sizeProp) => {
-        if (sizeProp === sizeProperty) {
-          return html`
+    return (
+      <>
+        <div>{path}</div>
+        {availableSizeProperties.map((sizeProp) => {
+          if (sizeProp === sizeProperty) {
+            return (
+              <div>
+                <b>
+                  {LABELS[sizeProp]}: {formatBytes(mainSize)}
+                </b>{" "}
+                ({percentageString})
+              </div>
+            );
+          } else {
+            return (
+              <div>
+                {LABELS[sizeProp]}: {formatBytes(node.originalValue[sizeProp])}
+              </div>
+            );
+          }
+        })}
+        {id && importedByCache.has(id) && (
+          <div>
             <div>
-              <b>${LABELS[sizeProp]}:${" "}${formatBytes(mainSize)}</b
-              >${" "}(${percentageString})
+              <b>Imported By</b>:
             </div>
-          `;
-        } else {
-          return html`
-            <div>
-              ${LABELS[sizeProp]}:${" "}
-              ${formatBytes(node.originalValue[sizeProp])}
-            </div>
-          `;
-        }
-      })}
-      ${id &&
-      importedByCache.has(id) &&
-      html`
-        <div>
-          <div><b>Imported By</b>:</div>
-          ${[...new Set(importedByCache.get(id).map(({ id }) => id))].map(
-            (id) => html` <div>${id}</div> `
-          )}
-        </div>
-      `}
-    `;
+            {[...new Set(importedByCache.get(id).map(({ id }) => id))].map(
+              (id) => (
+                <div>{id}</div>
+              )
+            )}
+          </div>
+        )}
+      </>
+    );
   }, [node]);
 
   const updatePosition = (mouseCoords) => {
@@ -107,15 +112,15 @@ const Tooltip = ({
     };
   }, []);
 
-  return html`
+  return (
     <div
-      class="tooltip ${visible ? "" : "tooltip-hidden"}"
-      ref=${ref}
-      style=${style}
+      class={`tooltip ${visible ? "" : "tooltip-hidden"}`}
+      ref={ref}
+      style={style}
     >
-      ${content}
+      {content}
     </div>
-  `;
+  );
 };
 
 Tooltip.marginX = 10;

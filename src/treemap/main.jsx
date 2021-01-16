@@ -1,16 +1,16 @@
 import { useState } from "preact/hooks";
-import { html } from "htm/preact";
+import { h, Fragment } from "preact";
 import {
   hierarchy as d3hierarchy,
   treemap as d3treemap,
   treemapResquarify,
 } from "d3-hierarchy";
 
-import SideBar from "../sidebar.js";
-import Chart from "./chart.js";
+import SideBar from "../sidebar.jsx";
+import Chart from "./chart.jsx";
 
-import createRainbowColor from "./color";
-import { getAvailableSizeOptions } from "../sizes";
+import createRainbowColor from "./color.js";
+import { getAvailableSizeOptions } from "../sizes.js";
 
 const Main = ({ width, height, data: { tree, links, options = {} } }) => {
   const availableSizeProperties = getAvailableSizeOptions(options);
@@ -78,24 +78,26 @@ const Main = ({ width, height, data: { tree, links, options = {} } }) => {
     importedCache.get(source).push({ id: target });
   }
 
-  return html`
-    <${SideBar}
-      sizeProperty=${sizeProperty}
-      availableSizeProperties=${availableSizeProperties}
-      setSizeProperty=${setSizeProperty}
-    />
-    <${Chart}
-      layout=${layout}
-      root=${root}
-      color=${color}
-      width=${width}
-      height=${height}
-      sizeProperty=${sizeProperty}
-      availableSizeProperties=${availableSizeProperties}
-      importedByCache=${importedByCache}
-      importedCache=${importedCache}
-    />
-  `;
+  return (
+    <>
+      <SideBar
+        sizeProperty={sizeProperty}
+        availableSizeProperties={availableSizeProperties}
+        setSizeProperty={setSizeProperty}
+      />
+      <Chart
+        layout={layout}
+        root={root}
+        color={color}
+        width={width}
+        height={height}
+        sizeProperty={sizeProperty}
+        availableSizeProperties={availableSizeProperties}
+        importedByCache={importedByCache}
+        importedCache={importedCache}
+      />
+    </>
+  );
 };
 
 export default Main;

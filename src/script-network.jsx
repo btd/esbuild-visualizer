@@ -1,6 +1,6 @@
 import { render } from "preact";
 import { useState, useRef, useEffect, useMemo } from "preact/hooks";
-import { html } from "htm/preact";
+import { h, Fragment } from "preact";
 import { max as d3max } from "d3-array";
 import { scaleSqrt } from "d3-scale";
 
@@ -41,34 +41,40 @@ const Tooltip = ({
 
     const uid = node.uid;
 
-    return html`
-      <div>${node.id}</div>
-      ${availableSizeProperties.map((sizeProp) => {
-        if (sizeProp === sizeProperty) {
-          return html`
+    return (
+      <>
+        <div>{node.id}</div>
+        {availableSizeProperties.map((sizeProp) => {
+          if (sizeProp === sizeProperty) {
+            return (
+              <div>
+                <b>
+                  {LABELS[sizeProp]}: {formatBytes(node[sizeProp])}
+                </b>
+              </div>
+            );
+          } else {
+            return (
+              <div>
+                {LABELS[sizeProp]}: {formatBytes(node[sizeProp])}
+              </div>
+            );
+          }
+        })}
+        {uid && importedByCache.has(uid) && (
+          <div>
             <div>
-              <b>${LABELS[sizeProp]}:${" "}${formatBytes(node[sizeProp])}</b>
+              <b>Imported By</b>:
             </div>
-          `;
-        } else {
-          return html`
-            <div>
-              ${LABELS[sizeProp]}:${" "} ${formatBytes(node[sizeProp])}
-            </div>
-          `;
-        }
-      })}
-      ${uid &&
-      importedByCache.has(uid) &&
-      html`
-        <div>
-          <div><b>Imported By</b>:</div>
-          ${[...new Set(importedByCache.get(uid).map(({ id }) => id))].map(
-            (id) => html` <div>${id}</div> `
-          )}
-        </div>
-      `}
-    `;
+            {[...new Set(importedByCache.get(uid).map(({ id }) => id))].map(
+              (id) => (
+                <div>{id}</div>
+              )
+            )}
+          </div>
+        )}
+      </>
+    );
   }, [node]);
 
   const updatePosition = (mouseCoords) => {
@@ -106,15 +112,15 @@ const Tooltip = ({
     };
   }, []);
 
-  return html`
+  return (
     <div
-      class="tooltip ${visible ? "" : "tooltip-hidden"}"
-      ref=${ref}
-      style=${style}
+      class={`tooltip ${visible ? "" : "tooltip-hidden"}`}
+      ref={ref}
+      style={style}
     >
-      ${content}
+      {content}
     </div>
-  `;
+  );
 };
 
 Tooltip.marginX = 10;
@@ -129,39 +135,39 @@ const Network = ({
   onNodeHover,
   sizeProperty,
 }) => {
-  return html`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox=${`0 0 ${width} ${height}`}>
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${width} ${height}`}>
       <g stroke="#999" stroke-opacity="0.6">
-        ${links.map((link) => {
-          return html`
+        {links.map((link) => {
+          return (
             <line
               stroke-width="1"
-              x1=${link.source.x}
-              y1=${link.source.y}
-              x2=${link.target.x}
-              y2=${link.target.y}
+              x1={link.source.x}
+              y1={link.source.y}
+              x2={link.target.x}
+              y2={link.target.y}
             />
-          `;
+          );
         })}
       </g>
       <g stroke="#fff" stroke-width="1.5">
-        ${nodes.map((node) => {
-          return html`
+        {nodes.map((node) => {
+          return (
             <circle
-              r=${size(node[sizeProperty])}
-              fill=${color(node)}
-              cx=${node.x}
-              cy=${node.y}
-              onMouseOver=${(evt) => {
+              r={size(node[sizeProperty])}
+              fill={color(node)}
+              cx={node.x}
+              cy={node.y}
+              onMouseOver={(evt) => {
                 evt.stopPropagation();
                 onNodeHover(node);
               }}
             />
-          `;
+          );
         })}
       </g>
     </svg>
-  `;
+  );
 };
 
 const Chart = ({
@@ -189,29 +195,32 @@ const Chart = ({
     };
   }, []);
 
-  return html`
-    <${Network}
-      width=${width}
-      height=${height}
-      links=${links}
-      nodes=${nodes}
-      size=${size}
-      onNodeHover=${(node) => {
-        setTooltipNode(node);
-        setShowTooltip(true);
-      }}
-      sizeProperty=${sizeProperty}
-      availableSizeProperties=${availableSizeProperties}
-    />
-    <${Tooltip}
-      visible=${showTooltip}
-      node=${tooltipNode}
-      importedByCache=${importedByCache}
-      importedCache=${importedCache}
-      sizeProperty=${sizeProperty}
-      availableSizeProperties=${availableSizeProperties}
-    />
-  `;
+  return (
+    <>
+      {" "}
+      <Network
+        width={width}
+        height={height}
+        links={links}
+        nodes={nodes}
+        size={size}
+        onNodeHover={(node) => {
+          setTooltipNode(node);
+          setShowTooltip(true);
+        }}
+        sizeProperty={sizeProperty}
+        availableSizeProperties={availableSizeProperties}
+      />
+      <Tooltip
+        visible={showTooltip}
+        node={tooltipNode}
+        importedByCache={importedByCache}
+        importedCache={importedCache}
+        sizeProperty={sizeProperty}
+        availableSizeProperties={availableSizeProperties}
+      />
+    </>
+  );
 };
 
 const SideBar = ({
@@ -224,29 +233,27 @@ const SideBar = ({
       setSizeProperty(sizeProp);
     }
   };
-  return html`
+  return (
     <aside class="sidebar">
       <div class="size-selectors">
-        ${availableSizeProperties.length > 1 &&
-        availableSizeProperties.map((sizeProp) => {
-          const id = `selector-${sizeProp}`;
-          return html`
-            <div class="size-selector">
-              <input
-                type="radio"
-                id=${id}
-                checked=${sizeProp === sizeProperty}
-                onChange=${handleChange(sizeProp)}
-              />
-              <label for=${id}>
-                ${LABELS[sizeProp]}
-              </label>
-            </div>
-          `;
-        })}
+        {availableSizeProperties.length > 1 &&
+          availableSizeProperties.map((sizeProp) => {
+            const id = `selector-${sizeProp}`;
+            return (
+              <div class="size-selector">
+                <input
+                  type="radio"
+                  id={id}
+                  checked={sizeProp === sizeProperty}
+                  onChange={handleChange(sizeProp)}
+                />
+                <label for={id}> {LABELS[sizeProp]} </label>
+              </div>
+            );
+          })}
       </div>
     </aside>
-  `;
+  );
 };
 
 const Main = ({
@@ -364,32 +371,31 @@ const Main = ({
     importedCache.get(source).push({ uid: target, ...origNodes[target] });
   }
 
-  return html`
-    <${SideBar}
-      sizeProperty=${sizeProperty}
-      availableSizeProperties=${availableSizeProperties}
-      setSizeProperty=${setSizeProperty}
-    />
-    <${Chart}
-      nodes=${realGraphNodes}
-      links=${links}
-      size=${size}
-      color=${color}
-      width=${width}
-      height=${height}
-      sizeProperty=${sizeProperty}
-      availableSizeProperties=${availableSizeProperties}
-      importedByCache=${importedByCache}
-      importedCache=${importedCache}
-    />
-  `;
+  return (
+    <>
+      <SideBar
+        sizeProperty={sizeProperty}
+        availableSizeProperties={availableSizeProperties}
+        setSizeProperty={setSizeProperty}
+      />
+      <Chart
+        nodes={realGraphNodes}
+        links={links}
+        size={size}
+        color={color}
+        width={width}
+        height={height}
+        sizeProperty={sizeProperty}
+        availableSizeProperties={availableSizeProperties}
+        importedByCache={importedByCache}
+        importedCache={importedCache}
+      />
+    </>
+  );
 };
 
 const drawChart = (parentNode, data, width, height) => {
-  render(
-    html` <${Main} data=${data} width=${width} height=${height} /> `,
-    parentNode
-  );
+  render(<Main data={data} width={width} height={height} />, parentNode);
 };
 
 export default drawChart;
