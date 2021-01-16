@@ -61,9 +61,9 @@ if (argv.all) {
 }
 
 const inputPath = (template) =>
-  template === "treemap"
-    ? "./src/treemap/index.jsx"
-    : `./src/script-${template}.jsx`;
+  template === "network"
+    ? `./src/script-${template}.jsx`
+    : `./src/${template}/index.jsx`;
 
 const runBuild = async (template) => {
   const inputOptions = {
@@ -73,7 +73,7 @@ const runBuild = async (template) => {
     format: "iife",
     globalName: "drawChart",
     plugins: [scssPlugin],
-    minify: true,
+    minify: !argv.dev,
     target: ["es2017"],
     jsxFragment: "Fragment",
     jsxFactory: "h",
