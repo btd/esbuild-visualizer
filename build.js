@@ -36,7 +36,7 @@ let args = require("yargs")
     describe: "Build all templates",
     boolean: true,
   })
-  .option("dev", { describe: "Run dev build", boolean: true });
+  .option("dev", { describe: "Run dev build", boolean: true, default: false });
 
 for (const t of TEMPLATE) {
   args = args.option(t, {
@@ -60,10 +60,7 @@ if (argv.all) {
   }
 }
 
-const inputPath = (template) =>
-  template === "network"
-    ? `./src/script-${template}.jsx`
-    : `./src/${template}/index.jsx`;
+const inputPath = (template) => `./src/${template}/index.jsx`;
 
 const runBuild = async (template) => {
   const inputOptions = {

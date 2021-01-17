@@ -7,6 +7,8 @@ import {
   treemapResquarify,
 } from "d3-hierarchy";
 
+import { scaleSequentialSqrt } from "d3-scale";
+
 import uid from "../uid.js";
 import createRainbowColor from "./color.js";
 import { getAvailableSizeOptions } from "../sizes.js";
@@ -18,14 +20,6 @@ const Main = ({ width, height, data: { tree, links, options = {} } }) => {
   const availableSizeProperties = getAvailableSizeOptions(options);
 
   const [sizeProperty, setSizeProperty] = useState(availableSizeProperties[0]);
-
-  const layout = d3treemap()
-    .size([width, height])
-    .paddingOuter(3)
-    .paddingTop(20)
-    .paddingInner(2)
-    .round(true)
-    .tile(treemapResquarify);
 
   const root = d3hierarchy(tree)
     .eachAfter((node) => {
@@ -64,6 +58,14 @@ const Main = ({ width, height, data: { tree, links, options = {} } }) => {
     .sort(
       (a, b) => b.originalValue[sizeProperty] - a.originalValue[sizeProperty]
     );
+
+  const layout = d3treemap()
+    .size([width, height])
+    .paddingOuter(3)
+    .paddingTop(20)
+    .paddingInner(2)
+    .round(true)
+    .tile(treemapResquarify);
 
   const color = createRainbowColor(root);
 

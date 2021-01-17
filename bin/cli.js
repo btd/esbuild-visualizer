@@ -4,7 +4,6 @@
 const fs = require("fs").promises;
 const globToRegexp = require("glob-to-regexp");
 
-const TEMPLATE = require("../plugin/template-types");
 const warn = require("../plugin/warn");
 
 const buildTemplate = require("../plugin/index");
@@ -26,12 +25,6 @@ const argv = require("yargs")
     describe: "Output file title",
     string: true,
     default: "EsBuild Visualizer",
-  })
-  .option("template", {
-    describe: "Template type",
-    string: true,
-    choices: TEMPLATE,
-    default: "treemap",
   })
   .option("sourcemap", {
     describe: "Provided files is sourcemaps",

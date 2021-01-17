@@ -8,12 +8,7 @@ const opn = require("open");
 const TEMPLATE = require("./template-types");
 const buildStats = require("./build-stats");
 
-const {
-  buildTree,
-  mergeTrees,
-  addLinks,
-  mergeSingleChildWithParent,
-} = require("./data");
+const { buildTree, mergeTrees, addLinks } = require("./data");
 
 module.exports = async (opts) => {
   opts = opts || {};
@@ -30,7 +25,6 @@ module.exports = async (opts) => {
   }
 
   const roots = [];
-  const links = [];
 
   // collect trees
   for (const [id, bundle] of Object.entries(opts.metadata.outputs)) {
@@ -39,7 +33,7 @@ module.exports = async (opts) => {
 
     const modules = Object.entries(bundle.inputs);
 
-    const tree = buildTree(modules);
+    const tree = buildTree(id, modules);
 
     Object.assign(tree, {
       renderedLength: bundle.bytes,
@@ -47,18 +41,17 @@ module.exports = async (opts) => {
       name: id,
     });
 
-    //mergeSingleChildWithParent(tree);
-
     roots.push(tree);
   }
 
-  addLinks(Object.entries(opts.metadata.inputs), links);
-
   const tree = mergeTrees(roots);
+
+  const { nodes, links } = addLinks(opts.metadata);
 
   const data = {
     tree,
     links,
+    nodes,
   };
 
   const fileContent = await buildStats({

@@ -1,16 +1,20 @@
 "use strict";
 
-const buildTree = (modules) => {
+const buildTree = (id, modules) => {
   const tree = {
-    name: "root",
+    name: id,
     children: [],
     isRoot: true,
   };
 
-  for (const [id, { bytesInOutput }] of modules) {
-    const name = id;
+  for (const [moduleId, { bytesInOutput }] of modules) {
+    const name = moduleId;
 
-    const nodeData = { id, renderedLength: bytesInOutput };
+    const nodeData = {
+      id: moduleId,
+      uid: `${id}-${moduleId}`,
+      renderedLength: bytesInOutput,
+    };
 
     addToPath(tree, name.split("/"), nodeData);
   }
@@ -54,12 +58,24 @@ const mergeTrees = (trees) => {
   return newTree;
 };
 
-const addLinks = (inputEntries, links) => {
-  for (const [inputId, { imports }] of inputEntries) {
-    for (const { path } of imports) {
-      links.push({ source: inputId, target: path });
+const addLinks = ({ inputs, outputs }) => {
+  const nodes = {};
+  const links = [];
+  for (const [outputModuleId, outputModule] of Object.entries(outputs)) {
+    for (const [moduleId, { bytesInOutput }] of Object.entries(outputModule.inputs)) {
+      const { imports } = inputs[moduleId];
+      const uid = `${outputModuleId}-${moduleId}`;
+      nodes[uid] = { id: moduleId, bytesInOutput };
+
+      for (const { path } of imports) {
+        if (path in outputModule) {
+          links.push({ source: uid, target: `${outputModuleId}-${path}` });
+        }
+      }
     }
   }
+
+  return { nodes, links };
 };
 
 const mergeSingleChildWithParent = (tree) => {
