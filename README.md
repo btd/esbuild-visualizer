@@ -32,7 +32,7 @@ esbuild-visualizer --metadata ./meta.json --exclude *.png
 
 `--filename` (string, default `stats.html`) - name of the file with diagram to generate
 
-`--title` (string, default `Rollup Visualizer`) - title tag value
+`--title` (string, default `Esbuild Visualizer`) - title tag value
 
 `--open` (boolean, default `false`) - Open generated file in default user agent
 
