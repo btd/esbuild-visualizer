@@ -3,8 +3,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import globToRegexp from "glob-to-regexp";
-
+import opn from "open";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -35,15 +34,10 @@ const argv = yargs(hideBin(process.argv))
     string: true,
     default: "./metadata.json",
   })
-  .option("include", {
-    array: true,
-    default: [],
-    describe: "Include patterns",
-  })
-  .option("exclude", {
-    array: true,
-    default: [],
-    describe: "Exclude patterns",
+  .option("open", {
+    describe: "Open file in browser",
+    boolean: true,
+    default: false,
   })
   .help().argv;
 
@@ -51,9 +45,8 @@ interface CliArgs {
   filename: string;
   title: string;
   template: TemplateType;
-  include: string[];
-  exclude: string[];
   metadata: string;
+  open: boolean;
 }
 
 const run = async (args: CliArgs) => {
@@ -63,12 +56,14 @@ const run = async (args: CliArgs) => {
   const fileContent = await visualizer(jsonContent, {
     title: args.title,
     template: args.template,
-    include: args.include.map((p) => globToRegexp(p, { extended: true })),
-    exclude: args.exclude.map((p) => globToRegexp(p, { extended: true })),
   });
 
   await fs.mkdir(path.dirname(args.filename), { recursive: true });
   await fs.writeFile(args.filename, fileContent);
+
+  if (args.open) {
+    await opn(args.filename);
+  }
 };
 
 run(argv).catch((err: Error) => {

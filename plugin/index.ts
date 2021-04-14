@@ -11,8 +11,6 @@ import { ModuleInfo } from "../types/rollup";
 export interface PluginVisualizerOptions {
   title?: string;
   template?: TemplateType;
-  include?: RegExp[];
-  exclude?: RegExp[];
 }
 
 export const visualizer = async (metadata: Metadata, opts: PluginVisualizerOptions = {}): Promise<string> => {

@@ -3,11 +3,6 @@
 [![NPM Version](https://img.shields.io/npm/v/esbuild-visualizer.svg)](https://npmjs.org/package/esbuild-visualizer) [![Travis CI build status](https://img.shields.io/travis/com/btd/esbuild-visualizer.svg)](https://travis-ci.com/btd/esbuild-visualizer)
 
 Visualize and analyze your esbuild bundle to see which modules are taking up space.
-
-## Screenshots
-
-![pic](https://github.com/btd/esbuild-visualizer/blob/master/pics/collage.png?raw=true)
-
 ## Installation
 
 ```sh
@@ -34,7 +29,7 @@ esbuild-visualizer --metadata ./meta.json --exclude *.png
 
 `--title` (string, default `Esbuild Visualizer`) - title tag value
 
-`--open` (boolean, default `false`) - Open generated file in default user agent
+`--template` (string, default `treemap`) - diagram type to use, could be sunburst, treemap, network
 
 ## Disclaimer about generated files
 
