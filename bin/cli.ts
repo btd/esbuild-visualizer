@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { promises as fs } from "fs";
+import path from "path";
 
 import globToRegexp from "glob-to-regexp";
 
@@ -10,7 +11,7 @@ import { hideBin } from "yargs/helpers";
 import TEMPLATE, { TemplateType } from "../plugin/template-types";
 import { warn } from "../plugin/warn";
 import { Metadata } from "../types/metafile";
-import { visualizer} from '../plugin/index'
+import { visualizer } from "../plugin/index";
 
 const argv = yargs(hideBin(process.argv))
   .option("filename", {
@@ -21,7 +22,7 @@ const argv = yargs(hideBin(process.argv))
   .option("title", {
     describe: "Output file title",
     type: "string",
-    default: "RollUp Visualizer",
+    default: "EsBuild Visualizer",
   })
   .option("template", {
     describe: "Template type",
@@ -59,16 +60,18 @@ const run = async (args: CliArgs) => {
   const textContent = await fs.readFile(args.metadata, { encoding: "utf-8" });
   const jsonContent = JSON.parse(textContent) as Metadata;
 
-  await visualizer(jsonContent, {
+  const fileContent = await visualizer(jsonContent, {
     title: args.title,
     template: args.template,
-    filename: args.filename,
     include: args.include.map((p) => globToRegexp(p, { extended: true })),
     exclude: args.exclude.map((p) => globToRegexp(p, { extended: true })),
   });
+
+  await fs.mkdir(path.dirname(args.filename), { recursive: true });
+  await fs.writeFile(args.filename, fileContent);
 };
 
-run(argv).catch((err) => {
+run(argv).catch((err: Error) => {
   warn(err.stack);
   process.exit(1);
 });

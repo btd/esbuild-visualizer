@@ -1,3 +1,18 @@
+export interface MetadataOutput {
+  bytes: number;
+  inputs: {
+    [path: string]: {
+      bytesInOutput: number;
+    };
+  };
+  imports: {
+    path: string;
+    kind: string;
+  }[];
+  exports: string[];
+  entryPoint?: string;
+}
+
 export interface Metadata {
   inputs: {
     [path: string]: {
@@ -9,19 +24,6 @@ export interface Metadata {
     };
   };
   outputs: {
-    [path: string]: {
-      bytes: number;
-      inputs: {
-        [path: string]: {
-          bytesInOutput: number;
-        };
-      };
-      imports: {
-        path: string;
-        kind: string;
-      }[];
-      exports: string[];
-      entryPoint?: string;
-    };
+    [path: string]: MetadataOutput;
   };
 }
