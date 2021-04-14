@@ -1,9 +1,10 @@
 "use strict";
 
+const fs = require("fs").promises;
 const esbuild = require("esbuild");
 const sass = require("sass");
 
-const TEMPLATE = require("./plugin/template-types");
+const TEMPLATE = ["sunburst", "treemap", "network"];
 
 const sassRender = (opts) => {
   return new Promise((resolve, reject) => {
@@ -60,13 +61,13 @@ if (argv.all) {
   }
 }
 
-const inputPath = (template) => `./src/${template}/index.jsx`;
+const inputPath = (template) => `./src/${template}/index.tsx`;
 
 const runBuild = async (template) => {
   const inputOptions = {
     entryPoints: [inputPath(template)],
     bundle: true,
-    outfile: `./lib/${template}.js`,
+    outfile: `./dist/lib/${template}.js`,
     format: "iife",
     globalName: "drawChart",
     plugins: [scssPlugin],
@@ -74,9 +75,14 @@ const runBuild = async (template) => {
     target: ["es2017"],
     jsxFragment: "Fragment",
     jsxFactory: "h",
+    metafile: true,
   };
 
-  await esbuild.build(inputOptions);
+  const { metafile } = await esbuild.build(inputOptions);
+  await fs.writeFile(
+    `./metafile.${template}.json`,
+    JSON.stringify(metafile, null, 2)
+  );
 };
 
 const run = async () => {

@@ -4,3 +4,8 @@ lib/*
 node_modules/
 stats.*
 temp/
+.DS_Store
+dist/
+metafile.json
+metafile.*.json
+stats.html
