@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.0
+
+* Feature parity with rollup plugin
 
 ## 0.2.0
 
