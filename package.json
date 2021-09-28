@@ -24,6 +24,7 @@
     "test": "node build.js --all"
   },
   "dependencies": {
+    "nanoid": "^3.1.22",
     "open": "^7.4.2",
     "yargs": "^16.2.0"
   },
@@ -53,7 +54,6 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-react": "^7.23.2",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "nanoid": "^3.1.22",
     "npm-run-all": "^4.1.5",
     "preact": "^10.5.13",
     "prettier": "^2.2.1",
