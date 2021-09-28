@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+* Fix nanoid dependency
+
 ## 0.3.0
 
 * Feature parity with rollup plugin
