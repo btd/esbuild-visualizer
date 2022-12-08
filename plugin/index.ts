@@ -1,12 +1,14 @@
 import { version } from "./version";
 
-import { TemplateType } from "./template-types";
+import type { TemplateType } from "./template-types";
 import { ModuleMapper } from "./module-mapper";
 import { addLinks, buildTree, mergeTrees } from "./data";
 import { buildHtml } from "./build-stats";
-import { ModuleLink, ModuleRenderInfo, ModuleTree, ModuleTreeLeaf, VisualizerData } from "../types/types";
-import { Metadata, MetadataOutput } from "../types/metafile";
-import { ModuleInfo } from "../types/rollup";
+import type { ModuleLink, ModuleRenderInfo, ModuleTree, ModuleTreeLeaf, VisualizerData } from "../types/types";
+import type { Metadata, MetadataOutput } from "../types/metafile";
+import type { ModuleInfo } from "../types/rollup";
+
+export { TemplateType, Metadata };
 
 export interface PluginVisualizerOptions {
   title?: string;
