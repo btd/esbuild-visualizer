@@ -4,6 +4,8 @@
   "author": "Denis Bardadym <bardadymchik@gmail.com>",
   "license": "MIT",
   "bin": "./dist/bin/cli.js",
+  "main": "./dist/plugin/index.js",
+  "types": "./dist/plugin/index.d.ts",
   "files": [
     "dist/*"
   ],
