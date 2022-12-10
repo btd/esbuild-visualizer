@@ -1,10 +1,10 @@
-import { h, FunctionalComponent } from "preact";
 import { HierarchyRectangularNode } from "d3-hierarchy";
+import { FunctionalComponent } from "preact";
 import { useContext } from "preact/hooks";
-import { StaticContext } from ".";
 import { ModuleTree, ModuleTreeLeaf } from "../../types/types";
 
 import { Node } from "./node";
+import { StaticContext } from ".";
 
 export interface SunBurstProps {
   root: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>;

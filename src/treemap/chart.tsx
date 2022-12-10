@@ -1,23 +1,30 @@
-import { h, Fragment, FunctionalComponent } from "preact";
+import { FunctionalComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { HierarchyRectangularNode } from "d3-hierarchy";
 
+import { ModuleTree, ModuleTreeLeaf, SizeKey } from "../../types/types";
 import { TreeMap } from "./treemap";
 import { Tooltip } from "./tooltip";
-import { ModuleTree, ModuleTreeLeaf, SizeKey } from "../../types/types";
 
 export interface ChartProps {
   root: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>;
   sizeProperty: SizeKey;
   selectedNode: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined;
-  setSelectedNode: (node: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined) => void;
+  setSelectedNode: (
+    node: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined
+  ) => void;
 }
 
-export const Chart: FunctionalComponent<ChartProps> = ({ root, sizeProperty, selectedNode, setSelectedNode }) => {
+export const Chart: FunctionalComponent<ChartProps> = ({
+  root,
+  sizeProperty,
+  selectedNode,
+  setSelectedNode,
+}) => {
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
-  const [tooltipNode, setTooltipNode] = useState<HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined>(
-    undefined
-  );
+  const [tooltipNode, setTooltipNode] = useState<
+    HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined
+  >(undefined);
 
   useEffect(() => {
     const handleMouseOut = () => {
@@ -42,7 +49,6 @@ export const Chart: FunctionalComponent<ChartProps> = ({ root, sizeProperty, sel
         onNodeClick={(node) => {
           setSelectedNode(selectedNode === node ? undefined : node);
         }}
-        sizeProperty={sizeProperty}
       />
       <Tooltip visible={showTooltip} node={tooltipNode} root={root} sizeProperty={sizeProperty} />
     </>

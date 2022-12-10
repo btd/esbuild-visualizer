@@ -1,21 +1,26 @@
-import { h, createContext, render } from "preact";
-import { hierarchy, HierarchyNode, HierarchyRectangularNode, partition, PartitionLayout } from "d3-hierarchy";
+import { createContext, render } from "preact";
+import {
+  hierarchy,
+  HierarchyNode,
+  HierarchyRectangularNode,
+  partition,
+  PartitionLayout,
+} from "d3-hierarchy";
 import { Arc, arc as d3arc } from "d3-shape";
 import { scaleLinear, scaleSqrt } from "d3-scale";
 
 import {
   isModuleTree,
-  ModuleRenderSizes,
+  ModuleLengths,
   ModuleTree,
   ModuleTreeLeaf,
   SizeKey,
   VisualizerData,
 } from "../../types/types";
 
-import { Main } from "./main";
-
 import { getAvailableSizeOptions } from "../sizes";
 import { generateUniqueId, Id } from "../uid";
+import { Main } from "./main";
 
 import "../style/style-sunburst.scss";
 
@@ -44,16 +49,21 @@ export interface ChartData {
 
 export type Context = StaticData & ChartData;
 
-export const StaticContext = createContext<Context>(({} as unknown) as Context);
+export const StaticContext = createContext<Context>({} as unknown as Context);
 
-const drawChart = (parentNode: Element, data: VisualizerData, width: number, height: number): void => {
+const drawChart = (
+  parentNode: Element,
+  data: VisualizerData,
+  width: number,
+  height: number
+): void => {
   const availableSizeProperties = getAvailableSizeOptions(data.options);
 
   const layout = partition<ModuleTree | ModuleTreeLeaf>();
 
   const rawHierarchy = hierarchy<ModuleTree | ModuleTreeLeaf>(data.tree);
 
-  const nodeSizesCache = new Map<ModuleTree | ModuleTreeLeaf, ModuleRenderSizes>();
+  const nodeSizesCache = new Map<ModuleTree | ModuleTreeLeaf, ModuleLengths>();
 
   const nodeIdsCache = new Map<ModuleTree | ModuleTreeLeaf, ModuleIds>();
 
@@ -67,14 +77,17 @@ const drawChart = (parentNode: Element, data: VisualizerData, width: number, hei
       nodeUid: generateUniqueId("node"),
     });
 
-    const sizes: ModuleRenderSizes = { renderedLength: 0 };
+    const sizes: ModuleLengths = { renderedLength: 0, gzipLength: 0, brotliLength: 0 };
     if (isModuleTree(nodeData)) {
       for (const sizeKey of availableSizeProperties) {
-        sizes[sizeKey] = nodeData.children.reduce((acc, child) => getModuleSize(child, sizeKey) + acc, 0);
+        sizes[sizeKey] = nodeData.children.reduce(
+          (acc, child) => getModuleSize(child, sizeKey) + acc,
+          0
+        );
       }
     } else {
       for (const sizeKey of availableSizeProperties) {
-        sizes[sizeKey] = data.nodes[nodeData.uid][sizeKey] ?? 0;
+        sizes[sizeKey] = data.nodeParts[nodeData.uid][sizeKey];
       }
     }
     nodeSizesCache.set(nodeData, sizes);

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+
+* Allow programmatic use with setting correct main
+* Resync with rollup plugin
+
 ## 0.3.1
 
 * Fix nanoid dependency

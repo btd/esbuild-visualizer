@@ -1,4 +1,4 @@
-import { h, Fragment, FunctionalComponent } from "preact";
+import { FunctionalComponent } from "preact";
 import { useContext, useMemo } from "preact/hooks";
 
 import { format as formatBytes } from "bytes";
@@ -34,7 +34,7 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, root, sizePro
         {availableSizeProperties.map((sizeProp) => {
           if (sizeProp === sizeProperty) {
             return (
-              <div className="details-size">
+              <div className="details-size" key={sizeProp}>
                 <b>
                   {LABELS[sizeProp]}: {formatBytes(getModuleSize(node.data, sizeProp))}
                 </b>
@@ -42,7 +42,7 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, root, sizePro
             );
           } else {
             return (
-              <div className="details-size">
+              <div className="details-size" key={sizeProp}>
                 {LABELS[sizeProp]}: {formatBytes(getModuleSize(node.data, sizeProp))}
               </div>
             );

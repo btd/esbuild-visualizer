@@ -1,149 +1,148 @@
-import { h, Fragment, FunctionalComponent } from "preact";
-import { useContext, useMemo, useState } from "preact/hooks";
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { FunctionalComponent } from "preact";
+import { useContext, useEffect, useMemo, useState } from "preact/hooks";
 import { scaleSqrt } from "d3-scale";
 import { max } from "d3-array";
-import webcola from "webcola";
+import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from "d3-force";
 
-import { ModuleRenderInfo, ModuleUID, SizeKey } from "../../types/types";
+import { ModuleUID } from "../../types/types";
 
+import { COLOR_BASE } from "../color";
+import { useFilter } from "../use-filter";
 import { SideBar } from "../sidebar";
 import { Chart } from "./chart";
-import { NODE_MODULES } from "./util";
 
-import { NetworkLink, NetworkNode, StaticContext } from "./index";
-import { getModuleColor } from "./color";
-import { useFilter } from "../use-filter";
-
-export type LinkInfo = ModuleRenderInfo & { uid: ModuleUID };
-export type ModuleLinkInfo = Map<ModuleUID, LinkInfo[]>;
+import createRainbowColor from "./color";
+import { NetworkNode, NodeInfo, StaticContext } from "./index";
 
 export const Main: FunctionalComponent = () => {
-  const { availableSizeProperties, nodes, data, width, height } = useContext(StaticContext);
+  const { nodes, data, width, height, nodeGroups, groupLayers, groups } = useContext(StaticContext);
 
-  const [sizeProperty, setSizeProperty] = useState<SizeKey>(availableSizeProperties[0]);
+  const sizeScale = useMemo(() => {
+    const maxLines = max(nodes, (d) => d.renderedLength) as number;
+    const size = scaleSqrt().domain([1, maxLines]).range([5, 30]);
+    return size;
+  }, [nodes]);
+
+  const getModuleColor = useMemo(() => {
+    return createRainbowColor(groups);
+  }, [groups]);
+
+  const [excludedNodes, setExcludedNodes] = useState<ModuleUID[]>([]);
+  const [selectedNode, setSelectedNode] = useState<string>();
 
   const { getModuleFilterMultiplier, setExcludeFilter, setIncludeFilter } = useFilter();
 
-  const sizeScale = useMemo(() => {
-    const maxLines = max(Object.values(nodes), (d) => d[sizeProperty]) as number;
-    const size = scaleSqrt().domain([1, maxLines]).range([5, 30]);
-    return size;
-  }, [nodes, sizeProperty]);
-
-  const processedNodes = Object.values(nodes)
-    .map((node) => {
-      const radius = sizeScale(node[sizeProperty] as number) + 1;
-      return {
-        ...node,
-        width: radius * 2,
-        height: radius * 2,
-        radius,
-        color: getModuleColor(node),
-      };
-    })
-    .filter((networkNode) => getModuleFilterMultiplier(networkNode) === 1) as Array<NetworkNode>;
-
-  const groups: Record<string, webcola.Group> = {};
-  for (const node of processedNodes) {
-    const match = NODE_MODULES.exec(node.id);
-    if (match) {
-      const [, nodeModuleName] = match;
-      groups[nodeModuleName] = groups[nodeModuleName] ?? { leaves: [], padding: 1 };
-      groups[nodeModuleName].leaves?.push(node);
+  const getColor = (node: NodeInfo) => {
+    if (selectedNode != null) {
+      if (
+        node.uid === selectedNode ||
+        data.nodeMetas[selectedNode].importedBy.some(({ uid }) => node.uid === uid)
+      ) {
+        return getModuleColor(node);
+      }
+      return COLOR_BASE;
+    } else {
+      return getModuleColor(node);
     }
-  }
-
-  const nodesCache = new Map(processedNodes.map((d) => [d.uid, d]));
-
-  // webcola has weird types, layour require array of links to Node references, but Nodes are computed from later
-  const links: NetworkLink[] = data.links
-    .map(({ source, target }) => {
-      return {
-        source: nodesCache.get(source) as NetworkNode,
-        target: nodesCache.get(target) as NetworkNode,
-        value: 1,
-      };
-    })
-    .filter(({ source, target }) => {
-      return source && target;
-    });
-
-  const cola = webcola.adaptor({}).size([width, height]);
-
-  const paddingX = 20;
-  const paddingY = 20;
-
-  const pageBounds = {
-    x: paddingX,
-    y: paddingY,
-    width: width - paddingX,
-    height: height - paddingY,
   };
 
-  const realGraphNodes = processedNodes.slice(0);
-  const topLeft = { x: pageBounds.x, y: pageBounds.y, fixed: 1 };
-  const tlIndex = (processedNodes as webcola.InputNode[]).push(topLeft) - 1;
-  const bottomRight = {
-    x: pageBounds.x + pageBounds.width,
-    y: pageBounds.y + pageBounds.height,
-    fixed: 1,
-  };
-  const brIndex = (processedNodes as webcola.InputNode[]).push(bottomRight) - 1;
-  const constraints = [];
-  for (let i = 0; i < realGraphNodes.length; i++) {
-    const node = realGraphNodes[i];
-    constraints.push({
-      axis: "x",
-      type: "separation",
-      left: tlIndex,
-      right: i,
-      gap: node.radius,
-    });
-    constraints.push({
-      axis: "y",
-      type: "separation",
-      left: tlIndex,
-      right: i,
-      gap: node.radius,
-    });
-    constraints.push({
-      axis: "x",
-      type: "separation",
-      left: i,
-      right: brIndex,
-      gap: node.radius,
-    });
-    constraints.push({
-      axis: "y",
-      type: "separation",
-      left: i,
-      right: brIndex,
-      gap: node.radius,
-    });
-  }
+  const processedNodes = useMemo(() => {
+    const newNodes: NetworkNode[] = [];
 
-  cola
-    .nodes(processedNodes)
-    .links(links)
-    //.groups(Object.values(groups))
-    .groupCompactness(1e-3)
-    .constraints(constraints)
-    .jaccardLinkLengths(50, 0.7)
-    .avoidOverlaps(true)
-    .handleDisconnected(false)
-    .start(30, 30, 30, 30, false, true)
-    .stop();
+    for (const node of nodes) {
+      //if (node.renderedLength === 0) continue;
+      if (excludedNodes.includes(node.uid)) continue;
+      const filterMultiplier = getModuleFilterMultiplier(node);
+      if (filterMultiplier === 0) continue;
+
+      const nodeGroup = nodeGroups[node.uid];
+
+      const layerIndex = groupLayers.findIndex((layer) => layer.includes(nodeGroup));
+
+      const groupId = groupLayers[layerIndex].indexOf(nodeGroup);
+      const groupsTotal = groupLayers[layerIndex].length;
+
+      newNodes.push({
+        ...node,
+        x: layerIndex * Math.cos((groupId / groupsTotal) * 2 * Math.PI) * 200,
+        y: layerIndex * Math.sin((groupId / groupsTotal) * 2 * Math.PI) * 200,
+        radius: sizeScale(node.renderedLength),
+      });
+    }
+    return newNodes;
+  }, [excludedNodes, getModuleFilterMultiplier, groupLayers, nodeGroups, nodes, sizeScale]);
+
+  const links = useMemo(() => {
+    const nodesCache: Record<ModuleUID, NetworkNode> = Object.fromEntries(
+      processedNodes.map((d) => [d.uid, d])
+    );
+
+    return Object.entries(data.nodeMetas)
+      .flatMap(([sourceUid, { imported }]) => {
+        return imported.map(({ uid: targetUid }) => {
+          return {
+            source: nodesCache[sourceUid],
+            target: nodesCache[targetUid],
+            value: 1,
+          };
+        });
+      })
+      .filter(({ source, target }) => {
+        return source && target;
+      });
+  }, [data.nodeMetas, processedNodes]);
+
+  const [animatedNodes, setAnimatedNodes] = useState<NetworkNode[]>([]);
+
+  useEffect(() => {
+    const simulation = forceSimulation<NetworkNode>()
+      .force(
+        "collision",
+        forceCollide<NetworkNode>().radius((node) => node.radius)
+      )
+      .force("charge", forceManyBody().strength(-30))
+      .force(
+        "link",
+        forceLink(links)
+          .strength((link) => {
+            if (nodeGroups[link.source.uid] === nodeGroups[link.target.uid]) {
+              return 1;
+            } else {
+              return 0.1;
+            }
+          })
+          .iterations(2)
+      )
+      .force("x", forceX(0))
+      .force("y", forceY(0));
+
+    simulation.on("tick", () => {
+      setAnimatedNodes([...simulation.nodes()]);
+    });
+    simulation.nodes([...processedNodes]);
+    // simulation.tick(1).stop();
+    simulation.alphaMin(0.03).restart();
+
+    return () => simulation.stop();
+  }, [nodeGroups, height, links, processedNodes, width]);
 
   return (
     <>
       <SideBar
-        sizeProperty={sizeProperty}
-        availableSizeProperties={availableSizeProperties}
-        setSizeProperty={setSizeProperty}
+        sizeProperty={"renderedLength"}
+        availableSizeProperties={["renderedLength"]}
+        setSizeProperty={() => {}}
         onExcludeChange={setExcludeFilter}
         onIncludeChange={setIncludeFilter}
       />
-      <Chart nodes={realGraphNodes} groups={{}} links={links} sizeProperty={sizeProperty} />
+      <Chart
+        nodes={animatedNodes}
+        onNodeExclude={(node) => setExcludedNodes([...excludedNodes, node.uid])}
+        links={links}
+        getColor={getColor}
+        onNodeSelect={(uid) => setSelectedNode(uid === selectedNode ? undefined : uid)}
+      />
     </>
   );
 };

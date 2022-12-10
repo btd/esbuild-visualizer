@@ -1,4 +1,4 @@
-import { h, FunctionalComponent, JSX } from "preact";
+import { FunctionalComponent, JSX } from "preact";
 import { useState } from "preact/hooks";
 import { SizeKey } from "../types/types";
 import { LABELS } from "./sizes";
@@ -61,11 +61,23 @@ export const SideBar: FunctionalComponent<SideBarProps> = ({
       <div className="module-filters">
         <div className="module-filter">
           <label htmlFor="module-filter-exclude">Exclude</label>
-          <input type="text" id="module-filter-exclude" value={excludeValue} onInput={handleExcludeChange} />
+          <input
+            type="text"
+            id="module-filter-exclude"
+            value={excludeValue}
+            onInput={handleExcludeChange}
+            placeholder="RegExp"
+          />
         </div>
         <div className="module-filter">
           <label htmlFor="module-filter-include">Include</label>
-          <input type="text" id="module-filter-include" value={includeValue} onInput={handleIncludeChange} />
+          <input
+            type="text"
+            id="module-filter-include"
+            value={includeValue}
+            onInput={handleIncludeChange}
+            placeholder="RegExp"
+          />
         </div>
       </div>
     </aside>

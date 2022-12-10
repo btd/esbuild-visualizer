@@ -13,6 +13,7 @@ import { Metadata } from "../types/metafile";
 import { visualizer } from "../plugin/index";
 
 const argv = yargs(hideBin(process.argv))
+  .strict()
   .option("filename", {
     describe: "Output file name",
     type: "string",
@@ -39,7 +40,8 @@ const argv = yargs(hideBin(process.argv))
     boolean: true,
     default: false,
   })
-  .help().argv;
+  .help()
+  .parseSync();
 
 interface CliArgs {
   filename: string;

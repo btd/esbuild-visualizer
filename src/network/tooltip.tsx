@@ -1,23 +1,20 @@
-import { h, Fragment, FunctionalComponent } from "preact";
+import { FunctionalComponent } from "preact";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { format as formatBytes } from "bytes";
+
 import { StaticContext, NetworkNode } from ".";
-import { LABELS } from "../sizes";
-import { SizeKey } from "../../types/types";
 
 export interface TooltipProps {
   node?: NetworkNode;
-  sizeProperty: SizeKey;
   visible: boolean;
 }
 
 const Tooltip_marginX = 10;
 const Tooltip_marginY = 30;
 
-export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, visible, sizeProperty }) => {
-  const { availableSizeProperties, importedByCache } = useContext(StaticContext);
+export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, visible }) => {
+  const { data } = useContext(StaticContext);
 
-  const ref = useRef<HTMLDivElement>();
+  const ref = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState({});
   const content = useMemo(() => {
     if (!node) return null;
@@ -25,38 +22,25 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, visible, size
     return (
       <>
         <div>{node.id}</div>
-        {availableSizeProperties.map((sizeProp) => {
-          if (sizeProp === sizeProperty) {
-            return (
-              <div>
-                <b>
-                  {LABELS[sizeProp]}: {formatBytes(node[sizeProp] ?? 0)}
-                </b>
-              </div>
-            );
-          } else {
-            return (
-              <div>
-                {LABELS[sizeProp]}: {formatBytes(node[sizeProp] ?? 0)}
-              </div>
-            );
-          }
-        })}
-        {node.uid && importedByCache.has(node.uid) && (
+
+        {node.uid && (
           <div>
             <div>
               <b>Imported By</b>:
             </div>
-            {[...new Set(importedByCache.get(node.uid)?.map(({ id }) => id))].map((id) => (
-              <div key={id}>{id}</div>
-            ))}
+            {data.nodeMetas[node.uid].importedBy.map(({ uid }) => {
+              const { id } = data.nodeMetas[uid];
+              return <div key={id}>{id}</div>;
+            })}
           </div>
         )}
       </>
     );
-  }, [availableSizeProperties, importedByCache, node, sizeProperty]);
+  }, [data, node]);
 
   const updatePosition = (mouseCoords: { x: number; y: number }) => {
+    if (!ref.current) return;
+
     const pos = {
       left: mouseCoords.x + Tooltip_marginX,
       top: mouseCoords.y + Tooltip_marginY,

@@ -1,10 +1,14 @@
 export type SizeKey = "renderedLength" | "gzipLength" | "brotliLength";
 
-export const isModuleTree = (mod: ModuleTree | ModuleTreeLeaf): mod is ModuleTree => "children" in mod;
+export const isModuleTree = (mod: ModuleTree | ModuleTreeLeaf): mod is ModuleTree =>
+  "children" in mod;
+
+export type ModuleUID = string;
+export type BundleId = string;
 
 export interface ModuleTreeLeaf {
-  uid: string;
   name: string;
+  uid: ModuleUID;
 }
 
 export interface ModuleTree {
@@ -12,32 +16,35 @@ export interface ModuleTree {
   children: Array<ModuleTree | ModuleTreeLeaf>;
 }
 
-export type ModuleUID = string;
+export type ModulePart = {
+  mainUid: ModuleUID;
+} & ModuleLengths;
 
-export type ModuleRenderInfo = {
-  id: string;
+export type ModuleImport = {
+  uid: ModuleUID;
+  dynamic?: boolean;
+};
+
+export type ModuleMeta = {
+  moduleParts: Record<BundleId, ModuleUID>;
+  importedBy: ModuleImport[];
+  imported: ModuleImport[];
   isEntry?: boolean;
   isExternal?: boolean;
-} & ModuleRenderSizes;
+  id: string;
+};
 
-export interface ModuleRenderSizes {
+export interface ModuleLengths {
   renderedLength: number;
-  gzipLength?: number;
-  brotliLength?: number;
-}
-
-export interface ModuleLink {
-  source: ModuleUID;
-  target: ModuleUID;
-  dynamic?: boolean;
+  gzipLength: number;
+  brotliLength: number;
 }
 
 export interface VisualizerData {
   version: number;
   tree: ModuleTree;
-  nodes: Record<ModuleUID, ModuleRenderInfo>;
-  nodeParts: Record<ModuleUID, Record<string, ModuleUID>>;
-  links: ModuleLink[];
+  nodeParts: Record<ModuleUID, ModulePart>;
+  nodeMetas: Record<ModuleUID, ModuleMeta>;
   env: {
     [key: string]: unknown;
   };

@@ -1,88 +1,133 @@
-import { h, createContext, render } from "preact";
-import webcola from "webcola";
+import { createContext, render } from "preact";
+import { SimulationLinkDatum, SimulationNodeDatum } from "d3-force";
 
-import { ModuleRenderInfo, ModuleRenderSizes, ModuleUID, SizeKey, VisualizerData } from "../../types/types";
-
-import { Main } from "./main";
+import { ModuleMeta, ModuleLengths, ModuleUID, SizeKey, VisualizerData } from "../../types/types";
 
 import { getAvailableSizeOptions } from "../sizes";
-import { CssColor } from "../color";
+import { Main } from "./main";
+import { NODE_MODULES } from "./util";
 
 import "../style/style-treemap.scss";
 
-export type NetworkNode = NodeInfo & { color: CssColor; radius: number } & webcola.Node;
-export type NetworkLink = webcola.Link<NetworkNode>;
+export type NetworkNode = NodeInfo & { radius: number } & SimulationNodeDatum;
+export type NetworkLink = SimulationLinkDatum<NetworkNode> & {
+  source: NetworkNode;
+  target: NetworkNode;
+};
 
 export interface StaticData {
   data: VisualizerData;
-  availableSizeProperties: SizeKey[];
   width: number;
   height: number;
 }
 
-export type NodeInfo = { bundles: Record<string, ModuleRenderInfo>; uid: ModuleUID } & ModuleRenderInfo;
+export type NodeInfo = { uid: ModuleUID; group: string } & ModuleMeta & ModuleLengths;
 export type ModuleNodeInfo = Map<ModuleUID, NodeInfo[]>;
 
 export interface ChartData {
-  importedCache: ModuleNodeInfo;
-  importedByCache: ModuleNodeInfo;
-  nodes: Record<ModuleUID, NodeInfo>;
+  nodes: NodeInfo[];
+  nodeGroups: Record<ModuleUID, string>;
+  groups: Record<string, number>;
+  groupLayers: string[][];
 }
 
 export type Context = StaticData & ChartData;
 
-export const StaticContext = createContext<Context>(({} as unknown) as Context);
+export const StaticContext = createContext<Context>({} as unknown as Context);
 
-const createNodeInfo = (data: VisualizerData, availableSizeProperties: SizeKey[], uid: ModuleUID): NodeInfo => {
-  const parts = data.nodeParts[uid];
-  const entries: [string, ModuleRenderInfo][] = Object.entries(parts).map(([bundleId, partUid]) => [
-    bundleId,
-    data.nodes[partUid],
-  ]);
-  const sizes = (Object.fromEntries(availableSizeProperties.map((key) => [key, 0])) as unknown) as ModuleRenderSizes;
+const createNodeInfo = (
+  data: VisualizerData,
+  availableSizeProperties: SizeKey[],
+  uid: ModuleUID
+): NodeInfo => {
+  const meta = data.nodeMetas[uid];
+  const entries: ModuleLengths[] = Object.values(meta.moduleParts).map(
+    (partUid) => data.nodeParts[partUid]
+  );
+  const sizes = Object.fromEntries(
+    availableSizeProperties.map((key) => [key, 0])
+  ) as unknown as ModuleLengths;
 
-  for (const [, renderInfo] of entries) {
+  for (const renderInfo of entries) {
     for (const sizeKey of availableSizeProperties) {
       sizes[sizeKey] += renderInfo[sizeKey] ?? 0;
     }
   }
-  const bundles = Object.fromEntries(entries);
-  return { uid, bundles, ...sizes, id: entries[0][1].id };
+
+  const match = NODE_MODULES.exec(meta.id);
+
+  return { uid, ...sizes, ...meta, group: match?.[1] ?? "" };
 };
 
-const drawChart = (parentNode: Element, data: VisualizerData, width: number, height: number): void => {
+const drawChart = (
+  parentNode: Element,
+  data: VisualizerData,
+  width: number,
+  height: number
+): void => {
   const availableSizeProperties = getAvailableSizeOptions(data.options);
 
-  const importedByCache = new Map<ModuleUID, NodeInfo[]>();
-  const importedCache = new Map<ModuleUID, NodeInfo[]>();
+  const nodeGroups: Record<ModuleUID, string> = {};
+  const groups: Record<string, number> = { "": 0 };
+  let groupId = 1;
 
-  const nodes: Record<ModuleUID, NodeInfo> = {};
-  for (const uid of Object.keys(data.nodeParts)) {
-    nodes[uid] = createNodeInfo(data, availableSizeProperties, uid);
+  const nodes: NodeInfo[] = [];
+  for (const uid of Object.keys(data.nodeMetas)) {
+    const node = createNodeInfo(data, availableSizeProperties, uid);
+    nodes.push(node);
+
+    nodeGroups[uid] = node.group;
+    groups[node.group] = groups[node.group] ?? groupId++;
   }
 
-  for (const { source, target } of data.links) {
-    if (!importedByCache.has(target)) {
-      importedByCache.set(target, []);
-    }
-    if (!importedCache.has(source)) {
-      importedCache.set(source, []);
-    }
+  const groupLinks: Record<string, Set<string>> = { "": new Set<string>() };
 
-    importedByCache.get(target)?.push(nodes[source]);
-    importedCache.get(source)?.push(nodes[target]);
+  for (const [sourceUid, { imported }] of Object.entries(data.nodeMetas)) {
+    for (const { uid: targetUid } of imported) {
+      const sourceGroup = nodeGroups[sourceUid];
+      const targetGroup = nodeGroups[targetUid];
+
+      if (!(sourceGroup in groupLinks)) {
+        groupLinks[sourceGroup] = new Set<string>();
+      }
+      groupLinks[sourceGroup].add(targetGroup);
+    }
+  }
+
+  const groupLayers: string[][] = [[""]];
+  const seen = new Set([""]);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const lastLayer = groupLayers[groupLayers.length - 1];
+    const newLayer = new Set<string>();
+
+    for (const currentGroup of lastLayer) {
+      for (const targetGroup of groupLinks[currentGroup] ?? []) {
+        if (seen.has(targetGroup)) {
+          continue;
+        }
+
+        seen.add(targetGroup);
+
+        newLayer.add(targetGroup);
+      }
+    }
+    if (newLayer.size === 0) {
+      break;
+    }
+    groupLayers.push([...newLayer]);
   }
 
   render(
     <StaticContext.Provider
       value={{
         data,
-        availableSizeProperties,
         width,
         height,
-        importedCache,
-        importedByCache,
         nodes,
+        nodeGroups,
+        groups,
+        groupLayers,
       }}
     >
       <Main />

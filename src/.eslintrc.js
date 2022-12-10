@@ -12,12 +12,12 @@ module.exports = {
   },
   plugins: ["react", "react-hooks"],
   rules: {
+    "react/react-in-jsx-scope": 0,
     "react/prop-types": 0,
   },
   settings: {
     react: {
       version: "16.0",
-      pragma: 'h'
     },
   },
 };

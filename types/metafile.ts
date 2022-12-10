@@ -11,6 +11,7 @@ export interface MetadataOutput {
   }[];
   exports: string[];
   entryPoint?: string;
+  cssBundle?: string;
 }
 
 export interface Metadata {

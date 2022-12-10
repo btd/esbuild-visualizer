@@ -1,20 +1,26 @@
-import { h, Fragment, FunctionalComponent } from "preact";
+import { FunctionalComponent } from "preact";
 import { useState, useEffect } from "preact/hooks";
-import webcola from "webcola";
 
-import { SizeKey } from "../../types/types";
 import { Tooltip } from "./tooltip";
 import { Network } from "./network";
+import { NodeColorGetter } from "./color";
 import { NetworkLink, NetworkNode } from ".";
 
 export interface ChartProps {
-  sizeProperty: SizeKey;
   links: NetworkLink[];
   nodes: NetworkNode[];
-  groups: Record<string, webcola.Group>;
+  onNodeExclude: (node: NetworkNode) => void;
+  getColor: NodeColorGetter;
+  onNodeSelect: (node: string | undefined) => void;
 }
 
-export const Chart: FunctionalComponent<ChartProps> = ({ sizeProperty, links, nodes, groups }) => {
+export const Chart: FunctionalComponent<ChartProps> = ({
+  links,
+  nodes,
+  onNodeExclude,
+  getColor,
+  onNodeSelect,
+}) => {
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const [tooltipNode, setTooltipNode] = useState<NetworkNode | undefined>(undefined);
 
@@ -34,13 +40,18 @@ export const Chart: FunctionalComponent<ChartProps> = ({ sizeProperty, links, no
       <Network
         links={links}
         nodes={nodes}
-        groups={groups}
         onNodeHover={(node) => {
           setTooltipNode(node);
           setShowTooltip(true);
         }}
+        onNodeDblClick={onNodeExclude}
+        onNodeClick={(node) => onNodeSelect(node.uid)}
+        onCanvasClick={() => {
+          onNodeSelect(undefined);
+        }}
+        getColor={getColor}
       />
-      <Tooltip visible={showTooltip} node={tooltipNode} sizeProperty={sizeProperty} />
+      <Tooltip visible={showTooltip} node={tooltipNode} />
     </>
   );
 };

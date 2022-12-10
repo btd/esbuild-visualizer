@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unknown-property */
-import { h, FunctionalComponent } from "preact";
 import { HierarchyRectangularNode } from "d3-hierarchy";
+import { FunctionalComponent } from "preact";
 import { ModuleTree, ModuleTreeLeaf } from "../../types/types";
 import color from "../color";
 
@@ -15,7 +15,14 @@ export interface NodeProps {
   onClick: NodeEventHandler;
 }
 
-export const Node: FunctionalComponent<NodeProps> = ({ node, onMouseOver, onClick, path, highlighted, selected }) => {
+export const Node: FunctionalComponent<NodeProps> = ({
+  node,
+  onMouseOver,
+  onClick,
+  path,
+  highlighted,
+  selected,
+}) => {
   return (
     <path
       d={path}

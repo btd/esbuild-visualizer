@@ -1,8 +1,8 @@
 import { scaleSequential, scaleLinear } from "d3-scale";
 import { hsl, RGBColor } from "d3-color";
 
-import { COLOR_BASE, CssColor } from "../color";
 import { HierarchyNode } from "d3-hierarchy";
+import { COLOR_BASE, CssColor } from "../color";
 import { ModuleTree, ModuleTreeLeaf } from "../../types/types";
 
 // https://www.w3.org/TR/WCAG20/#relativeluminancedef
@@ -40,7 +40,7 @@ const createRainbowColor = (root: HierarchyNode<ModuleTree | ModuleTreeLeaf>): N
   colorParentMap.set(root, COLOR_BASE);
 
   if (root.children != null) {
-    const colorScale = scaleSequential([0, root.children.length - 1], (n) => hsl(360 * n, 0.6, 0.85));
+    const colorScale = scaleSequential([0, root.children.length], (n) => hsl(360 * n, 0.3, 0.85));
     root.children.forEach((c, id) => {
       colorParentMap.set(c, colorScale(id).toString());
     });
@@ -53,7 +53,9 @@ const createRainbowColor = (root: HierarchyNode<ModuleTree | ModuleTreeLeaf>): N
   const getBackgroundColor = (node: HierarchyNode<ModuleTree | ModuleTreeLeaf>) => {
     const parents = node.ancestors();
     const colorStr =
-      parents.length === 1 ? colorParentMap.get(parents[0]) : colorParentMap.get(parents[parents.length - 2]);
+      parents.length === 1
+        ? colorParentMap.get(parents[0])
+        : colorParentMap.get(parents[parents.length - 2]);
 
     const hslColor = hsl(colorStr as string);
     hslColor.l = lightScale(node.depth);
@@ -65,7 +67,7 @@ const createRainbowColor = (root: HierarchyNode<ModuleTree | ModuleTreeLeaf>): N
     if (!colorMap.has(node)) {
       const backgroundColor = getBackgroundColor(node);
       const l = relativeLuminance(backgroundColor.rgb());
-      const fontColor = l > 0.179 ? "#000" : "#fff";
+      const fontColor = l > 0.19 ? "#000" : "#fff";
       colorMap.set(node, {
         backgroundColor: backgroundColor.toString(),
         fontColor,
