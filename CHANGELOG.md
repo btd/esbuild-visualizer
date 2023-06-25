@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1
+
+* Fix tooltip positioning when path too long. [PR](https://github.com/btd/esbuild-visualizer/pull/9)
+* Update versions
+
 ## 0.4.0
 
 * Allow programmatic use with setting correct main
