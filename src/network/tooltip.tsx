@@ -50,12 +50,12 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, visible }) =>
 
     if (pos.left + boundingRect.width > window.innerWidth) {
       // Shifting horizontally
-      pos.left = window.innerWidth - boundingRect.width;
+      pos.left = Math.max(window.innerWidth - boundingRect.width, 0);
     }
 
     if (pos.top + boundingRect.height > window.innerHeight) {
       // Flipping vertically
-      pos.top = mouseCoords.y - Tooltip_marginY - boundingRect.height;
+      pos.top = Math.max(mouseCoords.y - Tooltip_marginY - boundingRect.height, 0);
     }
 
     setStyle(pos);
