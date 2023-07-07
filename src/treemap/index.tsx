@@ -105,6 +105,7 @@ const drawChart = (
         nodeData,
         new Set(
           nodeMetas[mainUid].importedBy
+            .filter(({ uid }) => Object.values(nodeMetas[uid].moduleParts).some((moduleId) => moduleId in nodeParts))
             .map(({ uid }) => nodeMetas[uid].id)
         )
       );
