@@ -97,7 +97,9 @@ const drawChart = (
           nodeData,
           new Set(
             nodeData.children.reduce((acc, child) => {
-              const imported = getModuleImports(child);
+              const imported = getModuleImports(child).filter((id) => {
+                return !id.includes(nodeData.name);
+              });
 
               return acc.concat(imported);
             }, [] as string[])
