@@ -93,6 +93,16 @@ const drawChart = (
           (acc, child) => getModuleSize(child, sizeKey) + acc,
           0
         );
+        nodeImportsCache.set(
+          nodeData,
+          new Set(
+            nodeData.children.reduce((acc, child) => {
+              const imported = getModuleImports(child);
+
+              return acc.concat(imported);
+            }, [] as string[])
+          )
+        );
       }
     } else {
       const { nodeParts, nodeMetas } = data;
