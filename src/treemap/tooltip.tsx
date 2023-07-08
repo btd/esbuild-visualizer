@@ -5,7 +5,7 @@ import { format as formatBytes } from "bytes";
 import { FunctionalComponent } from "preact";
 import { HierarchyRectangularNode } from "d3-hierarchy";
 import { LABELS } from "../sizes";
-import { isModuleTree, ModuleTree, ModuleTreeLeaf, SizeKey } from "../../types/types";
+import { ModuleTree, ModuleTreeLeaf, SizeKey } from "../../types/types";
 import { StaticContext } from ".";
 
 export interface TooltipProps {
@@ -47,7 +47,7 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({
   root,
   sizeProperty,
 }) => {
-  const { availableSizeProperties, getModuleSize, data } = useContext(StaticContext);
+  const { availableSizeProperties, getModuleSize, data, getModuleImports } = useContext(StaticContext);
 
   const ref = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState({});
@@ -67,11 +67,7 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({
       .map((d) => d.data.name)
       .join("/");
 
-    let dataNode = null;
-    if (!isModuleTree(node.data)) {
-      const mainUid = data.nodeParts[node.data.uid].mainUid;
-      dataNode = data.nodeMetas[mainUid];
-    }
+    const imports = getModuleImports(node.data);
 
     return (
       <>
@@ -95,13 +91,12 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({
           }
         })}
         <br />
-        {dataNode && dataNode.importedBy.length > 0 && (
+        {imports.length > 0 && (
           <div>
             <div>
               <b>Imported By</b>:
             </div>
-            {dataNode.importedBy.map(({ uid }) => {
-              const id = data.nodeMetas[uid].id;
+            {imports.map((id) => {
               return <div key={id}>{id}</div>;
             })}
           </div>
@@ -116,7 +111,7 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({
         )}
       </>
     );
-  }, [availableSizeProperties, data, getModuleSize, node, root.data, sizeProperty]);
+  }, [availableSizeProperties, data, getModuleSize, node, root.data, sizeProperty, getModuleImports]);
 
   const updatePosition = (mouseCoords: { x: number; y: number }) => {
     if (!ref.current) return;

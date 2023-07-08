@@ -35,6 +35,7 @@ export interface ChartData {
   getModuleSize: (node: ModuleTree | ModuleTreeLeaf, sizeKey: SizeKey) => number;
   getModuleIds: (node: ModuleTree | ModuleTreeLeaf) => ModuleIds;
   getModuleColor: NodeColorGetter;
+  getModuleImports: (node: ModuleTree | ModuleTreeLeaf) => string[];
 }
 
 export type Context = StaticData & ChartData;
@@ -69,8 +70,12 @@ const drawChart = (
 
   const nodeIdsCache = new Map<ModuleTree | ModuleTreeLeaf, ModuleIds>();
 
+  const nodeImportsCache = new Map<ModuleTree | ModuleTreeLeaf, Set<string>>();
+
   const getModuleSize = (node: ModuleTree | ModuleTreeLeaf, sizeKey: SizeKey) =>
     nodeSizesCache.get(node)?.[sizeKey] ?? 0;
+
+  const getModuleImports = (node: ModuleTree | ModuleTreeLeaf) => [...(nodeImportsCache.get(node) ?? [])].sort();
 
   console.time("rawHierarchy eachAfter cache");
   rawHierarchy.eachAfter((node) => {
@@ -88,11 +93,34 @@ const drawChart = (
           (acc, child) => getModuleSize(child, sizeKey) + acc,
           0
         );
+        nodeImportsCache.set(
+          nodeData,
+          new Set(
+            nodeData.children.reduce((acc, child) => {
+              const imported = getModuleImports(child).filter((id) => {
+                return !id.includes(nodeData.name);
+              });
+
+              return acc.concat(imported);
+            }, [] as string[])
+          )
+        );
       }
     } else {
+      const { nodeParts, nodeMetas } = data;
+      const mainUid = nodeParts[nodeData.uid].mainUid;
+
       for (const sizeKey of availableSizeProperties) {
-        sizes[sizeKey] = data.nodeParts[nodeData.uid][sizeKey] ?? 0;
+        sizes[sizeKey] = nodeParts[nodeData.uid][sizeKey] ?? 0;
       }
+      nodeImportsCache.set(
+        nodeData,
+        new Set(
+          nodeMetas[mainUid].importedBy
+            .filter(({ uid }) => Object.values(nodeMetas[uid].moduleParts).some((moduleId) => moduleId in nodeParts))
+            .map(({ uid }) => nodeMetas[uid].id)
+        )
+      );
     }
     nodeSizesCache.set(nodeData, sizes);
   });
@@ -116,6 +144,7 @@ const drawChart = (
         getModuleColor,
         rawHierarchy,
         layout,
+        getModuleImports,
       }}
     >
       <Main />
