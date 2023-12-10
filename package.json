@@ -1,6 +1,6 @@
 {
   "name": "esbuild-visualizer",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "author": "Denis Bardadym <bardadymchik@gmail.com>",
   "license": "MIT",
   "bin": "./dist/bin/cli.js",
