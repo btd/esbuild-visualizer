@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+* Resync with rollup plugin
+ * flamegraph
+ * new include/exclude
+* Allow to pass multiple --metadata
+
 ## 0.4.1
 
 * Fix tooltip positioning when path too long. [PR](https://github.com/btd/esbuild-visualizer/pull/9)

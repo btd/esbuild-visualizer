@@ -1,4 +1,6 @@
-import { useState, useMemo } from "preact/hooks";
+import { useState, useMemo, useCallback } from "preact/hooks";
+import { createFilter } from "../shared/create-filter";
+
 
 export type FilterSetter = (value: string) => void;
 
@@ -20,7 +22,44 @@ export type UseFilter = {
   excludeFilter: string;
   setIncludeFilter: FilterSetter;
   setExcludeFilter: FilterSetter;
-  getModuleFilterMultiplier: (data: { id: string }) => number;
+  getModuleFilterMultiplier: (bundleId: string, data: { id: string }) => number;
+};
+
+export const prepareFilter = (filt: string) => {
+  if (filt === "") return [];
+  return (
+    filt
+      .split(",")
+      // remove spaces before and after
+      .map((entry) => entry.trim())
+      // unquote "
+      .map((entry) =>
+        entry.startsWith('"') && entry.endsWith('"') ? entry.substring(1, entry.length - 1) : entry
+      )
+      // unquote '
+      .map((entry) =>
+        entry.startsWith("'") && entry.endsWith("'") ? entry.substring(1, entry.length - 1) : entry
+      )
+      // remove empty strings
+      .filter((entry) => entry)
+      // parse bundle:file
+      .map((entry) => entry.split(":"))
+      // normalize entry just in case
+      .flatMap((entry) => {
+        if (entry.length === 0) return [];
+        let bundle = null;
+        let file = null;
+        if (entry.length === 1 && entry[0]) {
+          file = entry[0];
+          return [{ file, bundle }];
+        }
+
+        bundle = entry[0] || null;
+        file = entry.slice(1).join(":") || null;
+
+        return [{ bundle, file }];
+      })
+  );
 };
 
 export const useFilter = (): UseFilter => {
@@ -30,40 +69,17 @@ export const useFilter = (): UseFilter => {
   const setIncludeFilterTrottled = useMemo(() => throttleFilter(setIncludeFilter, 200), []);
   const setExcludeFilterTrottled = useMemo(() => throttleFilter(setExcludeFilter, 200), []);
 
-  const isModuleIncluded = useMemo(() => {
-    if (includeFilter === "") {
-      return () => true;
-    }
-    try {
-      const re = new RegExp(includeFilter);
-      return ({ id }: { id: string }) => re.test(id);
-    } catch (err) {
-      return () => false;
-    }
-  }, [includeFilter]);
+  const isIncluded = useMemo(
+    () => createFilter(prepareFilter(includeFilter), prepareFilter(excludeFilter)),
+    [includeFilter, excludeFilter]
+  );
 
-  const isModuleExcluded = useMemo(() => {
-    if (excludeFilter === "") {
-      return () => false;
-    }
-    try {
-      const re = new RegExp(excludeFilter);
-      return ({ id }: { id: string }) => re.test(id);
-    } catch (err) {
-      return () => false;
-    }
-  }, [excludeFilter]);
-
-  const isDefaultInclude = includeFilter === "";
-
-  const getModuleFilterMultiplier = useMemo(() => {
-    return (data: { id: string }) => {
-      if (isDefaultInclude) {
-        return isModuleExcluded(data) ? 0 : 1;
-      }
-      return isModuleExcluded(data) && !isModuleIncluded(data) ? 0 : 1;
-    };
-  }, [isDefaultInclude, isModuleExcluded, isModuleIncluded]);
+  const getModuleFilterMultiplier = useCallback(
+    (bundleId: string, data: { id: string }) => {
+      return isIncluded(bundleId, data.id) ? 1 : 0;
+    },
+    [isIncluded]
+  );
 
   return {
     getModuleFilterMultiplier,

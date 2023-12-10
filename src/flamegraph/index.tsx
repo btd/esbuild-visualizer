@@ -2,13 +2,9 @@ import { createContext, render } from "preact";
 import {
   hierarchy,
   HierarchyNode,
-  HierarchyRectangularNode,
   partition,
   PartitionLayout,
 } from "d3-hierarchy";
-import { Arc, arc as d3arc } from "d3-shape";
-import { scaleLinear, scaleSqrt } from "d3-scale";
-
 import {
   isModuleTree,
   ModuleLengths,
@@ -18,11 +14,13 @@ import {
   VisualizerData,
 } from "../../shared/types";
 
-import { getAvailableSizeOptions } from "../sizes";
 import { generateUniqueId, Id } from "../uid";
+import { getAvailableSizeOptions } from "../sizes";
 import { Main } from "./main";
+import createRainbowColor, { NodeColorGetter } from "./color";
 
-import "../style/style-sunburst.scss";
+import "../style/style-flamegraph.scss";
+import { PADDING } from "./const";
 
 export interface StaticData {
   data: VisualizerData;
@@ -33,6 +31,7 @@ export interface StaticData {
 
 export interface ModuleIds {
   nodeUid: Id;
+  clipUid: Id;
 }
 
 export interface ChartData {
@@ -40,11 +39,7 @@ export interface ChartData {
   rawHierarchy: HierarchyNode<ModuleTree | ModuleTreeLeaf>;
   getModuleSize: (node: ModuleTree | ModuleTreeLeaf, sizeKey: SizeKey) => number;
   getModuleIds: (node: ModuleTree | ModuleTreeLeaf) => ModuleIds;
-  size: number;
-  radius: number;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  arc: Arc<any, HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>>;
+  getModuleColor: NodeColorGetter;
 }
 
 export type Context = StaticData & ChartData;
@@ -55,13 +50,22 @@ const drawChart = (
   parentNode: Element,
   data: VisualizerData,
   width: number,
-  height: number
+  height: number,
 ): void => {
   const availableSizeProperties = getAvailableSizeOptions(data.options);
 
-  const layout = partition<ModuleTree | ModuleTreeLeaf>();
+  console.time("layout create");
 
+  const layout = partition<ModuleTree | ModuleTreeLeaf>()
+    .size([width, height])
+    .padding(PADDING)
+    .round(true)
+
+  console.timeEnd("layout create");
+
+  console.time("rawHierarchy create");
   const rawHierarchy = hierarchy<ModuleTree | ModuleTreeLeaf>(data.tree);
+  console.timeEnd("rawHierarchy create");
 
   const nodeSizesCache = new Map<ModuleTree | ModuleTreeLeaf, ModuleLengths>();
 
@@ -70,11 +74,13 @@ const drawChart = (
   const getModuleSize = (node: ModuleTree | ModuleTreeLeaf, sizeKey: SizeKey) =>
     nodeSizesCache.get(node)?.[sizeKey] ?? 0;
 
+  console.time("rawHierarchy eachAfter cache");
   rawHierarchy.eachAfter((node) => {
     const nodeData = node.data;
 
     nodeIdsCache.set(nodeData, {
       nodeUid: generateUniqueId("node"),
+      clipUid: generateUniqueId("clip"),
     });
 
     const sizes: ModuleLengths = { renderedLength: 0, gzipLength: 0, brotliLength: 0 };
@@ -82,30 +88,23 @@ const drawChart = (
       for (const sizeKey of availableSizeProperties) {
         sizes[sizeKey] = nodeData.children.reduce(
           (acc, child) => getModuleSize(child, sizeKey) + acc,
-          0
+          0,
         );
       }
     } else {
       for (const sizeKey of availableSizeProperties) {
-        sizes[sizeKey] = data.nodeParts[nodeData.uid][sizeKey];
+        sizes[sizeKey] = data.nodeParts[nodeData.uid][sizeKey] ?? 0;
       }
     }
     nodeSizesCache.set(nodeData, sizes);
   });
+  console.timeEnd("rawHierarchy eachAfter cache");
 
   const getModuleIds = (node: ModuleTree | ModuleTreeLeaf) => nodeIdsCache.get(node) as ModuleIds;
 
-  const size = Math.min(width, height);
-  const radius = size / 2;
-
-  const x = scaleLinear().range([0, 2 * Math.PI]);
-  const y = scaleSqrt().range([0, radius]);
-
-  const arc = d3arc<HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>>()
-    .startAngle((d) => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
-    .endAngle((d) => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
-    .innerRadius((d) => y(d.y0))
-    .outerRadius((d) => y(d.y1));
+  console.time("color");
+  const getModuleColor = createRainbowColor(rawHierarchy);
+  console.timeEnd("color");
 
   render(
     <StaticContext.Provider
@@ -115,17 +114,15 @@ const drawChart = (
         width,
         height,
         getModuleSize,
+        getModuleIds,
+        getModuleColor,
         rawHierarchy,
         layout,
-        getModuleIds,
-        arc,
-        radius,
-        size,
       }}
     >
       <Main />
     </StaticContext.Provider>,
-    parentNode
+    parentNode,
   );
 };
 

@@ -1,45 +1,42 @@
-import { HierarchyRectangularNode } from "d3-hierarchy";
 import { FunctionalComponent } from "preact";
-import { useContext } from "preact/hooks";
+import { useContext, useMemo } from "preact/hooks";
+import { group } from "d3-array";
+import { HierarchyNode, HierarchyRectangularNode } from "d3-hierarchy";
+
 import { ModuleTree, ModuleTreeLeaf } from "../../shared/types";
-
 import { Node } from "./node";
-import { StaticContext } from ".";
+import { StaticContext } from "./index";
 
-export interface SunBurstProps {
+export interface FlameGraphProps {
   root: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>;
   onNodeHover: (event: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>) => void;
-  isNodeHighlighted: (node: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>) => boolean;
   selectedNode: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined;
   onNodeClick: (node: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>) => void;
 }
 
-export const SunBurst: FunctionalComponent<SunBurstProps> = ({
+export const FlameGraph: FunctionalComponent<FlameGraphProps> = ({
   root,
   onNodeHover,
-  isNodeHighlighted,
   selectedNode,
   onNodeClick,
 }) => {
-  const { getModuleIds, size, arc, radius } = useContext(StaticContext);
+  const { width, height, getModuleIds } = useContext(StaticContext);
+
+
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${size} ${size}`}>
-      <g transform={`translate(${radius},${radius})`}>
-        {root.descendants().map((node) => {
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${width} ${height}`}>
+      {root.descendants().map((node) => {
           return (
             <Node
               key={getModuleIds(node.data).nodeUid.id}
               node={node}
               onMouseOver={onNodeHover}
-              path={arc(node) as string}
-              highlighted={isNodeHighlighted(node)}
               selected={selectedNode === node}
               onClick={onNodeClick}
             />
           );
         })}
-      </g>
     </svg>
   );
 };

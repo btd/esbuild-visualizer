@@ -4,13 +4,16 @@ import { promises as fs } from "fs";
 import path from "path";
 
 import opn from "open";
-import yargs from "yargs";
+import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 
 import TEMPLATE, { TemplateType } from "../plugin/template-types";
 import { warn } from "../plugin/warn";
 import { Metadata } from "../types/metafile";
 import { visualizer } from "../plugin/index";
+import { version } from "../plugin/version";
+import { ModuleMeta, ModulePart, ModuleTree, ModuleUID, VisualizerData } from "../shared/types";
+import { renderTemplate } from "../plugin/render-template";
 
 const argv = yargs(hideBin(process.argv))
   .strict()
@@ -32,8 +35,8 @@ const argv = yargs(hideBin(process.argv))
   })
   .option("metadata", {
     describe: "Input file name",
-    string: true,
-    default: "./metadata.json",
+    array: true,
+    default: ["./metadata.json"],
   })
   .option("open", {
     describe: "Open file in browser",
@@ -47,17 +50,65 @@ interface CliArgs {
   filename: string;
   title: string;
   template: TemplateType;
-  metadata: string;
+  metadata: string[];
   open: boolean;
 }
 
 const run = async (args: CliArgs) => {
-  const textContent = await fs.readFile(args.metadata, { encoding: "utf-8" });
-  const jsonContent = JSON.parse(textContent) as Metadata;
+  if (args.metadata.length === 0) {
+    throw new Error("Empty file list");
+  }
 
-  const fileContent = await visualizer(jsonContent, {
-    title: args.title,
-    template: args.template,
+  const fileContents = await Promise.all(
+    args.metadata.map(async (file) => {
+      const textContent = await fs.readFile(file, { encoding: "utf-8" });
+      const jsonContent = JSON.parse(textContent) as Metadata;
+
+      const data = visualizer(jsonContent);
+
+      return { file, data };
+    })
+  );
+
+  const tree: ModuleTree = {
+    name: "root",
+    children: [],
+  };
+  const nodeParts: Record<ModuleUID, ModulePart> = {};
+  const nodeMetas: Record<ModuleUID, ModuleMeta> = {};
+
+  for (const { file, data } of fileContents) {
+    if (data.version !== version) {
+      warn(`Version in ${file} is not supported (${data.version}). Current version ${version}. Skipping...`);
+      continue;
+    }
+
+    if (data.tree.name === "root") {
+      tree.children = tree.children.concat(data.tree.children);
+    } else {
+      tree.children.push(data.tree);
+    }
+
+    Object.assign(nodeParts, data.nodeParts);
+    Object.assign(nodeMetas, data.nodeMetas);
+  }
+
+  const title = args.title ?? "EsBuild Visualizer";
+
+  const template = args.template ?? "treemap";
+
+  const data: VisualizerData = {
+    version,
+    tree,
+    nodeParts,
+    nodeMetas,
+    env: {},
+    options: { gzip: false, brotli: false, sourcemap: false },
+  };
+
+  const fileContent: string = await renderTemplate(template, {
+    title,
+    data,
   });
 
   await fs.mkdir(path.dirname(args.filename), { recursive: true });
@@ -68,7 +119,7 @@ const run = async (args: CliArgs) => {
   }
 };
 
-run(argv).catch((err: Error) => {
+run(argv as CliArgs).catch((err: Error) => {
   warn(err.stack);
   process.exit(1);
 });

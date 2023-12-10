@@ -1,10 +1,10 @@
 import { FunctionalComponent } from "preact";
-import { useState, useEffect, useMemo } from "preact/hooks";
-
+import { useState, useEffect } from "preact/hooks";
 import { HierarchyRectangularNode } from "d3-hierarchy";
+
 import { ModuleTree, ModuleTreeLeaf, SizeKey } from "../../shared/types";
+import { FlameGraph } from "./flamegraph";
 import { Tooltip } from "./tooltip";
-import { SunBurst } from "./sunburst";
 
 export interface ChartProps {
   root: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>;
@@ -15,51 +15,42 @@ export interface ChartProps {
   ) => void;
 }
 
-type NodeSelectHandler = (node: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>) => boolean;
-
 export const Chart: FunctionalComponent<ChartProps> = ({
   root,
   sizeProperty,
   selectedNode,
   setSelectedNode,
 }) => {
-  const [tooltipNode, setTooltipNode] = useState(root);
-
-  const isNodeHighlighted = useMemo<NodeSelectHandler>(() => {
-    const highlightedNodes = new Set(
-      tooltipNode === root ? root.descendants() : tooltipNode.ancestors()
-    );
-    return (node: HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf>): boolean => {
-      return highlightedNodes.has(node);
-    };
-  }, [root, tooltipNode]);
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
+  const [tooltipNode, setTooltipNode] = useState<
+    HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined
+  >(undefined);
 
   useEffect(() => {
     const handleMouseOut = () => {
-      setTooltipNode(root);
+      setShowTooltip(false);
     };
 
-    handleMouseOut();
     document.addEventListener("mouseover", handleMouseOut);
     return () => {
       document.removeEventListener("mouseover", handleMouseOut);
     };
-  }, [root]);
+  }, []);
 
   return (
     <>
-      <SunBurst
+      <FlameGraph
         root={root}
         onNodeHover={(node) => {
           setTooltipNode(node);
+          setShowTooltip(true);
         }}
-        isNodeHighlighted={isNodeHighlighted}
         selectedNode={selectedNode}
         onNodeClick={(node) => {
           setSelectedNode(selectedNode === node ? undefined : node);
         }}
       />
-      <Tooltip node={tooltipNode} root={root} sizeProperty={sizeProperty} />
+      <Tooltip visible={showTooltip} node={tooltipNode} root={root} sizeProperty={sizeProperty} />
     </>
   );
 };

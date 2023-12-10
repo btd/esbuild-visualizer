@@ -60,6 +60,8 @@ main {
 
   padding: 5px;
 
+  white-space: nowrap;
+
   font-size: 0.875rem;
 
   background-color: var(--background-color);
@@ -111,6 +113,7 @@ main {
 
 .module-filters {
   display: flex;
+  flex-grow: 1;
 }
 
 .module-filter {
@@ -132,4 +135,8 @@ main {
   & + & {
     margin-left: 0.5rem;
   }
+}
+
+.node {
+  cursor: pointer;
 }

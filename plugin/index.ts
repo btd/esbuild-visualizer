@@ -3,35 +3,16 @@ import { version } from "./version";
 import type { TemplateType } from "./template-types";
 import { ModuleMapper } from "./module-mapper";
 import { addLinks, buildTree, mergeTrees } from "./data";
-import { renderTemplate } from "./render-template";
-import type { ModuleLengths, ModuleTree, ModuleTreeLeaf, VisualizerData } from "../types/types";
+
+import type { ModuleLengths, ModuleTree, ModuleTreeLeaf, VisualizerData } from "../shared/types";
 import type { Metadata, MetadataOutput } from "../types/metafile";
 import type { ModuleInfo } from "../types/rollup";
 
 export { TemplateType, Metadata };
 
-export interface PluginVisualizerOptions {
-  /**
-   * HTML <title> value in generated file. Ignored when `json` is true.
-   *
-   * @default "Rollup Visualizer"
-   */
-  title?: string;
 
 
-  /**
-   * Which diagram to generate. 'sunburst' or 'treemap' can help find big dependencies or if they are repeated.
-   * 'network' can answer you why something was included
-   *
-   * @default 'treemap'
-   */
-  template?: TemplateType;
-}
-
-export const visualizer = async (metadata: Metadata, opts: PluginVisualizerOptions = {}): Promise<string> => {
-  const title = opts.title ?? "EsBuild Visualizer";
-
-  const template = opts.template ?? "treemap";
+export const visualizer = (metadata: Metadata): VisualizerData => {
   const projectRoot = "";
 
   const renderedModuleToInfo = (id: string, mod: { bytesInOutput: number }): ModuleLengths & { id: string } => {
@@ -85,8 +66,7 @@ export const visualizer = async (metadata: Metadata, opts: PluginVisualizerOptio
     tree,
     nodeParts: mapper.getNodeParts(),
     nodeMetas: mapper.getNodeMetas(),
-    env: {
-    },
+    env: {},
     options: {
       gzip: false,
       brotli: false,
@@ -94,10 +74,5 @@ export const visualizer = async (metadata: Metadata, opts: PluginVisualizerOptio
     },
   };
 
-  const fileContent: string = await renderTemplate(template, {
-    title,
-    data,
-  });
-
-  return fileContent;
+  return data;
 };
