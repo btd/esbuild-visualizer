@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+* Return old signature to `visulaizer` function
+
 ## 0.5.0
 
 * Resync with rollup plugin
