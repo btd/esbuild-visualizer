@@ -10,7 +10,7 @@ import { hideBin } from "yargs/helpers";
 import TEMPLATE, { TemplateType } from "../plugin/template-types";
 import { warn } from "../plugin/warn";
 import { Metadata } from "../types/metafile";
-import { visualizer } from "../plugin/index";
+import { prepareVisualizerData } from "../plugin/index";
 import { version } from "../plugin/version";
 import { ModuleMeta, ModulePart, ModuleTree, ModuleUID, VisualizerData } from "../shared/types";
 import { renderTemplate } from "../plugin/render-template";
@@ -64,10 +64,10 @@ const run = async (args: CliArgs) => {
       const textContent = await fs.readFile(file, { encoding: "utf-8" });
       const jsonContent = JSON.parse(textContent) as Metadata;
 
-      const data = visualizer(jsonContent);
+      const data = prepareVisualizerData(jsonContent);
 
       return { file, data };
-    })
+    }),
   );
 
   const tree: ModuleTree = {

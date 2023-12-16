@@ -7,12 +7,41 @@ import { addLinks, buildTree, mergeTrees } from "./data";
 import type { ModuleLengths, ModuleTree, ModuleTreeLeaf, VisualizerData } from "../shared/types";
 import type { Metadata, MetadataOutput } from "../types/metafile";
 import type { ModuleInfo } from "../types/rollup";
+import { renderTemplate } from "./render-template";
 
 export { TemplateType, Metadata };
 
+export interface PluginVisualizerOptions {
+  /**
+   * HTML <title> value in generated file. Ignored when `json` is true.
+   *
+   * @default "Rollup Visualizer"
+   */
+  title?: string;
 
+  /**
+   * Which diagram to generate. 'sunburst' or 'treemap' can help find big dependencies or if they are repeated.
+   * 'network' can answer you why something was included
+   *
+   * @default 'treemap'
+   */
+  template?: TemplateType;
+}
 
-export const visualizer = (metadata: Metadata): VisualizerData => {
+export const visualizer = async (metadata: Metadata, opts: PluginVisualizerOptions = {}): Promise<string> => {
+  const title = opts.title ?? "EsBuild Visualizer";
+
+  const template = opts.template ?? "treemap";
+
+  const fileContent: string = await renderTemplate(template, {
+    title,
+    data: prepareVisualizerData(metadata),
+  });
+
+  return fileContent;
+};
+
+export const prepareVisualizerData = (metadata: Metadata): VisualizerData => {
   const projectRoot = "";
 
   const renderedModuleToInfo = (id: string, mod: { bytesInOutput: number }): ModuleLengths & { id: string } => {
