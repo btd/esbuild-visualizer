@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+* Make output idempotent
+
 ## 0.5.1
 
 * Return old signature to `visulaizer` function
