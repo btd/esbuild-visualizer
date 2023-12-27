@@ -1,7 +1,7 @@
 import { version } from "./version";
 
 import type { TemplateType } from "./template-types";
-import { ModuleMapper } from "./module-mapper";
+import { ModuleMapper, replaceHashPlaceholders } from "./module-mapper";
 import { addLinks, buildTree, mergeTrees } from "./data";
 
 import type { ModuleLengths, ModuleTree, ModuleTreeLeaf, VisualizerData } from "../shared/types";
@@ -15,7 +15,7 @@ export interface PluginVisualizerOptions {
   /**
    * HTML <title> value in generated file. Ignored when `json` is true.
    *
-   * @default "Rollup Visualizer"
+   * @default "EsBuild Visualizer"
    */
   title?: string;
 
@@ -103,5 +103,7 @@ export const prepareVisualizerData = (metadata: Metadata): VisualizerData => {
     },
   };
 
-  return data;
+  const stringData = replaceHashPlaceholders(data);
+
+  return JSON.parse(stringData) as VisualizerData;
 };
