@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+* Sync with rollup plugin
+
 ## 0.6.0
 
 * Make output idempotent
