@@ -64,7 +64,7 @@ const run = async (args: CliArgs) => {
       const textContent = await fs.readFile(file, { encoding: "utf-8" });
       const jsonContent = JSON.parse(textContent) as Metadata;
 
-      const data = prepareVisualizerData(jsonContent);
+      const data = JSON.parse(prepareVisualizerData(jsonContent)) as VisualizerData;
 
       return { file, data };
     }),
@@ -108,7 +108,7 @@ const run = async (args: CliArgs) => {
 
   const fileContent: string = await renderTemplate(template, {
     title,
-    data,
+    data: JSON.stringify(data),
   });
 
   await fs.mkdir(path.dirname(args.filename), { recursive: true });

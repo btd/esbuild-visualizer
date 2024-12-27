@@ -21,32 +21,26 @@ const Tooltip_marginY = 30;
 const SOURCEMAP_RENDERED = (
   <span>
     {" "}
-    <b>{LABELS.renderedLength}</b> is a number of characters in the file after individual and <br />{" "}
-    whole bundle transformations according to sourcemap.
+    <b>{LABELS.renderedLength}</b> is a number of characters in the file after individual and <br /> whole bundle
+    transformations according to sourcemap.
   </span>
 );
 
 const RENDRED = (
   <span>
-    <b>{LABELS.renderedLength}</b> is a byte size of individual file after transformations and
-    treeshake.
+    <b>{LABELS.renderedLength}</b> is a byte size of individual file after transformations and treeshake.
   </span>
 );
 
 const COMPRESSED = (
   <span>
-    <b>{LABELS.gzipLength}</b> and <b>{LABELS.brotliLength}</b> is a byte size of individual file
-    after individual transformations,
+    <b>{LABELS.gzipLength}</b> and <b>{LABELS.brotliLength}</b> is a byte size of individual file after individual
+    transformations,
     <br /> treeshake and compression.
   </span>
 );
 
-export const Tooltip: FunctionalComponent<TooltipProps> = ({
-  node,
-  visible,
-  root,
-  sizeProperty,
-}) => {
+export const Tooltip: FunctionalComponent<TooltipProps> = ({ node, visible, root, sizeProperty }) => {
   const { availableSizeProperties, getModuleSize, data } = useContext(StaticContext);
 
   const ref = useRef<HTMLDivElement>(null);
@@ -130,12 +124,12 @@ export const Tooltip: FunctionalComponent<TooltipProps> = ({
 
     if (pos.left + boundingRect.width > window.innerWidth) {
       // Shifting horizontally
-      pos.left = window.innerWidth - boundingRect.width;
+      pos.left = Math.max(0, window.innerWidth - boundingRect.width);
     }
 
     if (pos.top + boundingRect.height > window.innerHeight) {
       // Flipping vertically
-      pos.top = mouseCoords.y - Tooltip_marginY - boundingRect.height;
+      pos.top = Math.max(0, mouseCoords.y - Tooltip_marginY - boundingRect.height);
     }
 
     setStyle(pos);

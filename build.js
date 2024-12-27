@@ -4,7 +4,7 @@ const fs = require("fs").promises;
 const esbuild = require("esbuild");
 const sass = require("sass");
 
-const HTML_TEMPLATE = ["treemap", "sunburst", "network", "flamegraph"];
+const HTML_TEMPLATE = ["treemap", "sunburst", "network"];
 const PLAIN_TEMPLATE = ["raw-data", "list"];
 const ALL_TEMPLATE = [...HTML_TEMPLATE, ...PLAIN_TEMPLATE];
 
@@ -67,9 +67,6 @@ const runBuild = async (template) => {
     jsxFactory: "h",
     metafile: true,
     tsconfig: "./src/tsconfig.json",
-    alias: {
-      picomatch: "picomatch-browser"
-    }
   };
 
   const { metafile } = await esbuild.build(inputOptions);

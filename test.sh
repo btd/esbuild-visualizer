@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HTML_TEMPLATES="network sunburst treemap flamegraph"
+HTML_TEMPLATES="network sunburst treemap"
 TEXT_TEMPLATES="list raw-data"
 
 for HTML_TEMPLATE in $HTML_TEMPLATES

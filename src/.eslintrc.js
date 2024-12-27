@@ -1,10 +1,5 @@
 module.exports = {
-  extends: [
-    "../.eslintrc.js",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "prettier",
-  ],
+  extends: ["../.eslintrc.js", "plugin:react/recommended", "plugin:react-hooks/recommended", "prettier"],
   parserOptions: {
     jsx: true,
     tsconfigRootDir: __dirname,

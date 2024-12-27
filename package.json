@@ -18,7 +18,8 @@
     "url": "https://github.com/btd/esbuild-visualizer/issues"
   },
   "scripts": {
-    "lint": "eslint 'plugin/**/*.ts' 'src/**/*.{ts,tsx}'",
+    "lint": "oxlint -c .oxlintrc.json plugin src",
+    "format": "prettier plugin src --write --list-different",
     "build": "run-p build:*",
     "build:plugin": "tsc",
     "build:frontend": "node build.js",
@@ -29,11 +30,10 @@
   },
   "dependencies": {
     "open": "^8.4.0",
-    "picomatch": "^2.3.1",
+    "picomatch": "^4.0.0",
     "yargs": "^17.6.2"
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
     "@types/bytes": "^3.1.1",
     "@types/d3-array": "^3.0.3",
     "@types/d3-color": "^3.1.0",
@@ -42,11 +42,8 @@
     "@types/d3-shape": "^3.1.0",
     "@types/glob-to-regexp": "^0.4.1",
     "@types/node": "^18.0.0",
-    "@types/picomatch": "^2.3.0",
+    "@types/picomatch": "^3.0.0",
     "@types/yargs": "^17.0.17",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.13.2",
-    "picomatch-browser": "^2.2.6",
     "bytes": "^3.1.2",
     "d3-array": "^3.2.1",
     "d3-color": "^3.1.0",
@@ -54,19 +51,15 @@
     "d3-hierarchy": "^3.1.2",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.1.0",
-    "del-cli": "^5.0.0",
-    "esbuild": "^0.19.9",
-    "eslint": "^8.29.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "eslint-plugin-react": "^7.31.11",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "del-cli": "^6.0.0",
+    "esbuild": "^0.24.2",
     "npm-run-all": "^4.1.5",
+    "oxlint": "^0.15.3",
     "preact": "^10.11.3",
     "prettier": "^3.1.1",
     "sass": "^1.56.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.7.2",
+    "vitest": "^2.1.8"
   },
   "engines": {
     "node": ">=18"

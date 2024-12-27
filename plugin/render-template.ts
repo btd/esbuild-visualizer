@@ -5,12 +5,7 @@ import { BundleId, ModuleLengths, VisualizerData } from "../shared/types";
 import { TemplateType } from "./template-types";
 
 const htmlEscape = (str: string) =>
-  str
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const buildHtmlTemplate = (title: string, script: string, nodesData: string, style: string) =>
   `
@@ -55,7 +50,7 @@ ${script}
 `;
 
 export type RenderTemplateOptions = {
-  data: VisualizerData;
+  data: string;
   title: string;
 };
 
@@ -67,12 +62,16 @@ const buildHtml =
       fs.readFile(path.join(__dirname, "..", "lib", `${template}.css`), "utf8"),
     ]);
 
-    return buildHtmlTemplate(title, script, JSON.stringify(data), style);
+    return buildHtmlTemplate(title, script, data, style);
   };
 
-const outputRawData = (data: VisualizerData) => JSON.stringify(data, null, 2);
+const outputRawData = (strData: string) => {
+  const data = JSON.parse(strData) as VisualizerData;
+  return JSON.stringify(data, null, 2);
+};
 
-const outputPlainTextList = (data: VisualizerData) => {
+const outputPlainTextList = (strData: string) => {
+  const data = JSON.parse(strData) as VisualizerData;
   const bundles: Record<BundleId, [string, ModuleLengths][]> = {};
 
   for (const meta of Object.values(data.nodeMetas)) {
@@ -110,16 +109,12 @@ const outputPlainTextList = (data: VisualizerData) => {
   return output;
 };
 
-const TEMPLATE_TYPE_RENDERED: Record<
-  TemplateType,
-  (options: RenderTemplateOptions) => Promise<string>
-> = {
+const TEMPLATE_TYPE_RENDERED: Record<TemplateType, (options: RenderTemplateOptions) => Promise<string>> = {
   network: buildHtml("network"),
   sunburst: buildHtml("sunburst"),
   treemap: buildHtml("treemap"),
   "raw-data": async ({ data }) => outputRawData(data),
   list: async ({ data }) => outputPlainTextList(data),
-  flamegraph: buildHtml("flamegraph"),
 };
 
 export const renderTemplate = (templateType: TemplateType, options: RenderTemplateOptions) => {

@@ -8,6 +8,7 @@ export interface MetadataOutput {
   imports: {
     path: string;
     kind: string;
+    external?: boolean;
   }[];
   exports: string[];
   entryPoint?: string;
@@ -21,7 +22,12 @@ export interface Metadata {
       imports: {
         path: string;
         kind: string;
+        external?: boolean;
+        original?: string;
+        with?: Record<string, string>;
       }[];
+      format?: string;
+      with?: Record<string, string>;
     };
   };
   outputs: {

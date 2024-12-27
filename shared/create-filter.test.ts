@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "vitest";
 import { createFilter } from "./create-filter";
 
 describe("createFilter", () => {
@@ -30,12 +30,27 @@ describe("createFilter", () => {
     });
 
     it.each([
-      [[{ bundle: "translation-*.js" }], [{ bundle: "translation-de.js" }], "translation-de.js", "file", false],
-      [[{ bundle: "translation-*.js" }], [{ bundle: "translation-de.js" }], "translation-en.js", "file", true],
-    ])("%# should exclude included %j %j bundle %j file %j - %j", (include, exclude, bundle, file, result) => {
-      const isIncluded = createFilter(include, exclude);
-      expect(isIncluded(bundle, file)).toBe(result);
-    });
+      [
+        [{ bundle: "translation-*.js" }],
+        [{ bundle: "translation-de.js" }],
+        "translation-de.js",
+        "file",
+        false,
+      ],
+      [
+        [{ bundle: "translation-*.js" }],
+        [{ bundle: "translation-de.js" }],
+        "translation-en.js",
+        "file",
+        true,
+      ],
+    ])(
+      "%# should exclude included %j %j bundle %j file %j - %j",
+      (include, exclude, bundle, file, result) => {
+        const isIncluded = createFilter(include, exclude);
+        expect(isIncluded(bundle, file)).toBe(result);
+      }
+    );
   });
 
   describe("File", () => {
@@ -60,12 +75,27 @@ describe("createFilter", () => {
     });
 
     it.each([
-      [[{ file: "translations/**" }], [{ file: "translations/de.js" }], "bundle", "translations/de.js", false],
-      [[{ file: "translations/**" }], [{ file: "translations/de.js" }], "bundle", "translations/en.js", true],
-    ])("%# should exclude included %j %j bundle %j file %j - %j", (include, exclude, bundle, file, result) => {
-      const isIncluded = createFilter(include, exclude);
-      expect(isIncluded(bundle, file)).toBe(result);
-    });
+      [
+        [{ file: "translations/**" }],
+        [{ file: "translations/de.js" }],
+        "bundle",
+        "translations/de.js",
+        false,
+      ],
+      [
+        [{ file: "translations/**" }],
+        [{ file: "translations/de.js" }],
+        "bundle",
+        "translations/en.js",
+        true,
+      ],
+    ])(
+      "%# should exclude included %j %j bundle %j file %j - %j",
+      (include, exclude, bundle, file, result) => {
+        const isIncluded = createFilter(include, exclude);
+        expect(isIncluded(bundle, file)).toBe(result);
+      }
+    );
   });
 
   describe("File in Bundle", () => {

@@ -41,18 +41,18 @@ export const visualizer = async (metadata: Metadata, opts: PluginVisualizerOptio
   return fileContent;
 };
 
-export const prepareVisualizerData = (metadata: Metadata): VisualizerData => {
-  const projectRoot = "";
-
-  const renderedModuleToInfo = (id: string, mod: { bytesInOutput: number }): ModuleLengths & { id: string } => {
-    const result = {
-      id,
-      gzipLength: 0,
-      brotliLength: 0,
-      renderedLength: mod.bytesInOutput,
-    };
-    return result;
+const renderedModuleToInfo = (id: string, mod: { bytesInOutput: number }): ModuleLengths & { id: string } => {
+  const result = {
+    id,
+    gzipLength: 0,
+    brotliLength: 0,
+    renderedLength: mod.bytesInOutput,
   };
+  return result;
+};
+
+export const prepareVisualizerData = (metadata: Metadata): string => {
+  const projectRoot = "";
 
   const roots: Array<ModuleTree | ModuleTreeLeaf> = [];
   const mapper = new ModuleMapper(projectRoot);
@@ -105,5 +105,5 @@ export const prepareVisualizerData = (metadata: Metadata): VisualizerData => {
 
   const stringData = replaceHashPlaceholders(data);
 
-  return JSON.parse(stringData) as VisualizerData;
+  return stringData;
 };

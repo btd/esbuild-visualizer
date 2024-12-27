@@ -10,14 +10,13 @@ import { Chart } from "./chart";
 import { StaticContext } from "./index";
 
 export const Main: FunctionalComponent = () => {
-  const { availableSizeProperties, rawHierarchy, getModuleSize, layout, data } =
-    useContext(StaticContext);
+  const { availableSizeProperties, rawHierarchy, getModuleSize, layout, data } = useContext(StaticContext);
 
   const [sizeProperty, setSizeProperty] = useState<SizeKey>(availableSizeProperties[0]);
 
-  const [selectedNode, setSelectedNode] = useState<
-    HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined
-  >(undefined);
+  const [selectedNode, setSelectedNode] = useState<HierarchyRectangularNode<ModuleTree | ModuleTreeLeaf> | undefined>(
+    undefined,
+  );
 
   const { getModuleFilterMultiplier, setExcludeFilter, setIncludeFilter } = useFilter();
 
@@ -55,9 +54,9 @@ export const Main: FunctionalComponent = () => {
         if (isModuleTree(node)) return 0;
 
         const meta = data.nodeMetas[data.nodeParts[node.uid].metaUid];
-        const bundleId = Object.entries(meta.moduleParts).find(
-          ([bundleId, uid]) => uid == node.uid
-        )?.[0]!!;
+
+        /* eslint-disable typescript/no-non-null-asserted-optional-chain typescript/no-extra-non-null-assertion */
+        const bundleId = Object.entries(meta.moduleParts).find(([, uid]) => uid == node.uid)?.[0]!!;
 
         const ownSize = getModuleSize(node, sizeProperty);
         const zoomMultiplier = getNodeSizeMultiplier(node);
@@ -68,15 +67,7 @@ export const Main: FunctionalComponent = () => {
       .sort((a, b) => getModuleSize(a.data, sizeProperty) - getModuleSize(b.data, sizeProperty));
 
     return layout(rootWithSizesAndSorted);
-  }, [
-    data,
-    getModuleFilterMultiplier,
-    getModuleSize,
-    getNodeSizeMultiplier,
-    layout,
-    rawHierarchy,
-    sizeProperty,
-  ]);
+  }, [data, getModuleFilterMultiplier, getModuleSize, getNodeSizeMultiplier, layout, rawHierarchy, sizeProperty]);
 
   console.timeEnd("root hierarchy compute");
 
@@ -89,12 +80,7 @@ export const Main: FunctionalComponent = () => {
         onExcludeChange={setExcludeFilter}
         onIncludeChange={setIncludeFilter}
       />
-      <Chart
-        root={root}
-        sizeProperty={sizeProperty}
-        selectedNode={selectedNode}
-        setSelectedNode={setSelectedNode}
-      />
+      <Chart root={root} sizeProperty={sizeProperty} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
     </>
   );
 };
