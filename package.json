@@ -1,6 +1,7 @@
 {
   "name": "esbuild-visualizer",
   "version": "0.7.0",
+  "description": "Visualize and analyze your esbuild bundle to see which modules are taking up space.",
   "author": "Denis Bardadym <bardadymchik@gmail.com>",
   "license": "MIT",
   "bin": "./dist/bin/cli.js",
